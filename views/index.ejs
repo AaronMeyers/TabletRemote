@@ -15,7 +15,7 @@
   		<div class="panel-body">
   			<% for ( var i=0; i<remotes.length; i++ ) { %>
   				<div class="remoteBox">
-  					<span class="remoteNumber"><%=i+1%>:</span> <span class="label label-<%=remotes[i]==undefined?'danger':'success'%>"><%= remotes[i]==undefined?'DISCONNECTED':'CONNECTED' %></span>
+  					<span class="remoteNumber"><%=i+1%>:</span> <span id="remoteStatus<%=i+1%>" class="label label-<%=remotes[i]==undefined?'danger':'success'%>"><%= remotes[i]==undefined?'DISCONNECTED':'CONNECTED' %></span>
 
   				<% if ( remotes[i] == undefined ) { %>
   					<!-- <div> <%= i %> is undefined</div> -->

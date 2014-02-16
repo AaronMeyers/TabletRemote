@@ -9,7 +9,7 @@ $(document).on( 'ready', function() {
 			$('#controlPanel').fadeIn();
 		}
 		else if ( json.type == 'remoteInfo' ) {
-			console.log( json.remotes );
+			updateRemoteInfo( json.remotes );
 		}
 	}
 
@@ -28,5 +28,15 @@ $(document).on( 'ready', function() {
 		else {
 			console.log( 'socket wasn\'t ready' );
 		}
+	}
+
+	function updateRemoteInfo( remotes ) {
+
+		for ( var i=0; i<remotes.length; i++ ) {
+			$('#remoteStatus'+(i+1)).html( remotes[i].connected?'CONNECTED':'DISCONNECTED' );
+			$('#remoteStatus'+(i+1)).addClass( remotes[i].connected?'label-success':'label-danger' );
+			$('#remoteStatus'+(i+1)).removeClass( remotes[i].connected?'label-danger':'label-success' );
+		}
+
 	}
 });
