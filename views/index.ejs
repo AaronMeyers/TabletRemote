@@ -3,29 +3,46 @@
 <script src="javascripts/servercontrol.js"></script>
 
 <div id="controlPanel" class="panel panel-default" style="display:none">
-  <div class="panel-heading">
-    <div class="panel-title">SERVER CONTROL</div>
-  </div>
-  <div class="panel-body">
+	<div class="panel-heading">
+		<div class="panel-title">SERVER CONTROL</div>
+	</div>
+	<div class="panel-body">
 
-  	<div class="panel panel-default">
-  		<div class="panel-heading">
-  			<div class="panel-title">REMOTES</div>
-  		</div>
-  		<div class="panel-body">
-  			<% for ( var i=0; i<remotes.length; i++ ) { %>
-  				<div class="remoteBox">
-  					<span class="remoteNumber"><%=i+1%>:</span> <span id="remoteStatus<%=i+1%>" class="label label-<%=remotes[i]==undefined?'danger':'success'%>"><%= remotes[i]==undefined?'DISCONNECTED':'CONNECTED' %></span>
+		<form id="settingsForm" class="form-horizontal">
+			<div class="form-group">
+				<label for="oscAddressInput" class="col-xs-3 control-label">OSC Address</label>
+				<div class="col-xs-9">
 
-  				<% if ( remotes[i] == undefined ) { %>
-  					<!-- <div> <%= i %> is undefined</div> -->
-  				<% } else { %>
-  					<!-- <div> <%= i %> is defined</div> -->
-  				<% } %>
-	  			</div>
-  			<% } %>
-  		</div>
-  	</div>
+					<div class="input-group">
+						<input id="oscAddressInput" type="text" class="form-control" placeholder="OSC Address">
+						<span class="input-group-btn">
+							<button id="oscAddressButton" class="btn btn-default" type="button">Go!</button>
+						</span>
+					</div><!-- /input-group -->
 
-  </div>
+				</div>
+			</div>
+		</form>
+		<br/>
+
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<div class="panel-title">REMOTES</div>
+			</div>
+			<div class="panel-body">
+				<% for ( var i=0; i<remotes.length; i++ ) { %>
+					<div class="remoteBox">
+						<span class="remoteNumber"><%=i+1%>:</span> <span id="remoteStatus<%=i+1%>" class="label label-<%=remotes[i]==undefined?'danger':'success'%>"><%= remotes[i]==undefined?'DISCONNECTED':'CONNECTED' %></span>
+
+					<% if ( remotes[i] == undefined ) { %>
+						<!-- <div> <%= i %> is undefined</div> -->
+					<% } else { %>
+						<!-- <div> <%= i %> is defined</div> -->
+					<% } %>
+					</div>
+				<% } %>
+			</div>
+		</div>
+
+	</div>
 </div>

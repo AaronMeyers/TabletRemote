@@ -6,11 +6,48 @@ $(document).on( 'ready', function() {
 	socket.onmessage = function( message ) {
 		var json = JSON.parse( message.data );
 		if ( json.type == 'registerServerControl' ) {
+			var oscInfo = json.oscAddress + ':' + json.oscPort;
+			$('#oscAddressInput').val( oscInfo );
 			$('#controlPanel').fadeIn();
 		}
 		else if ( json.type == 'remoteInfo' ) {
 			updateRemoteInfo( json.remotes );
 		}
+		else if ( json.type == 'setOscInfo' ) {
+			console.log( 'osc info: ' + json.oscInfo );
+			$('#oscAddressInput').val( json.oscInfo );
+			$('#oscAddressInput').removeAttr( 'disabled' );
+			$('#oscAddressButton').removeAttr( 'disabled' );
+		}
+	}
+
+	// disable form submit behavior
+
+	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered );
+	$('#oscAddressInput').keyup(function(e){
+		if ( e.keyCode == 13 ) {
+			$(this).trigger('enterKey');
+			e.preventDefault();
+		}
+	});
+	$('#oscAddressButton').on( 'click', oscInfoEntered );
+
+	$('form').submit( function(e) {
+		e.preventDefault();
+		return false;
+
+	});
+
+	function oscInfoEntered() {
+		console.log( 'oscInfoEntered' );
+		$('#oscAddressInput').blur();
+		$('#oscAddressButton').blur();
+		$('#oscAddressInput').attr( 'disabled', 'disabled' );
+		$('#oscAddressButton').attr( 'disabled', 'disabled' );
+		sendSocketMessage( JSON.stringify({
+			type: 'setOscInfo',
+			oscInfo: $('#oscAddressInput').val()
+		}));
 	}
 
 	function onSocketOpen() {

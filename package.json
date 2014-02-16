@@ -10,6 +10,7 @@
     "jade": "*",
     "ws": "*",
     "ejs": "*",
-    "ejs-locals": "x.x"
+    "ejs-locals": "x.x",
+    "osc-min": "x.x"
   }
 }

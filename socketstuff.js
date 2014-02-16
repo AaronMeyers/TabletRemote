@@ -1,13 +1,21 @@
 module.exports = function( params ) {
 
 	var stuff = {};
-
+	// create websocket stuff
 	var WebSocketServer = require('ws').Server
 	, wss = new WebSocketServer({port: 8080});
+	// create osc stuff
+	var osc = require('osc-min')
+	, dgram = require('dgram')
+	, udp = dgram.createSocket( 'udp4' );
+
 	var sockets = {};
 	var socketCounter = 0;
 	var remotes = new Array( 4 );
 	stuff.remotes = remotes;
+
+	var oscAddress = '127.0.0.1';
+	var oscPort = '12000';
 
 	wss.on('connection', function(ws) {
 		var id = socketCounter++;
@@ -37,8 +45,22 @@ module.exports = function( params ) {
 			}
 			else if ( json.type == 'registerServerControl' ) {
 				console.log( 'registered a server control' );
+				json.oscAddress = oscAddress;
+				json.oscPort = oscPort;
 				ws.serverControl = true;
-				ws.send( message );
+				ws.send( JSON.stringify(json) );
+			}
+			else if ( json.type == 'setOscInfo' ) {
+				if ( validateIpAndPort( json.oscInfo ) ) {
+					console.log( 'valid osc info' );
+					var parts = json.oscInfo.split( ':' );
+					oscAddress = parts[0];
+					oscPort = parts[1];
+				}
+				else
+					console.log( 'invalid' );
+				json.oscInfo = oscAddress + ':' + oscPort;
+				ws.send( JSON.stringify( json ) );
 			}
 		});
 
@@ -69,6 +91,18 @@ module.exports = function( params ) {
 			else
 				console.log( s + ' not server control' );
 		}
+
+		var outport = 12000;
+		var buf = osc.toBuffer({
+			address: '/heartbeat',
+			args: [
+				12,
+				'sttttring',
+				new Buffer( 'beat' ),
+				{type: 'integer', value: 7}
+			]
+		});
+		udp.send( buf, 0, buf.length, outport, '127.0.0.1' );
 	}
 
 	function removeRemote( ws ) {
@@ -97,6 +131,22 @@ module.exports = function( params ) {
 		// 	else
 		// 		console.log( i + ' -- something' );
 		// }
+	}
+
+	function validateIpAndPort(input) {
+    var parts = input.split(":");
+    var ip = parts[0].split(".");
+    var port = parts[1];
+    return validateNum(port, 1, 65535) &&
+        ip.length == 4 &&
+        ip.every(function (segment) {
+            return validateNum(segment, 0, 255);
+        });
+	}
+
+	function validateNum(input, min, max) {
+	    var num = +input;
+	    return num >= min && num <= max && input === num.toString();
 	}
 
 	return stuff;
