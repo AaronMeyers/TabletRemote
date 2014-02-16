@@ -10,7 +10,7 @@ $(document).on( 'ready', function() {
 		var json = JSON.parse( message.data );
 		if ( json.type == 'setRemoteNum' ) {
 
-			$('#settingsPanel').fadeOut();
+			// $('#settingsPanel').fadeOut();
 
 		}
 
