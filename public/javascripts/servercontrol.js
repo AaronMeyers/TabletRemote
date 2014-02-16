@@ -9,6 +9,7 @@ $(document).on( 'ready', function() {
 			var oscInfo = json.oscAddress + ':' + json.oscPort;
 			$('#oscAddressInput').val( oscInfo );
 			$('#controlPanel').fadeIn();
+			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
 		}
 		else if ( json.type == 'remoteInfo' ) {
 			updateRemoteInfo( json.remotes );
@@ -19,9 +20,11 @@ $(document).on( 'ready', function() {
 			$('#oscAddressInput').removeAttr( 'disabled' );
 			$('#oscAddressButton').removeAttr( 'disabled' );
 		}
+		else if ( json.type == 'setHeartbeat' ) {
+			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+		}
 	}
 
-	// disable form submit behavior
 
 	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered );
 	$('#oscAddressInput').keyup(function(e){
@@ -32,10 +35,18 @@ $(document).on( 'ready', function() {
 	});
 	$('#oscAddressButton').on( 'click', oscInfoEntered );
 
+	$('#heartbeatToggle').change(function() {
+		console.log( 'heartbeat toggled: ' + $(this).is(':checked') );
+		sendSocketMessage( JSON.stringify({
+			type: 'setHeartbeat',
+			heartbeat: $(this).prop('checked')
+		}));
+	});
+
+	// disable form submit behavior
 	$('form').submit( function(e) {
 		e.preventDefault();
 		return false;
-
 	});
 
 	function oscInfoEntered() {

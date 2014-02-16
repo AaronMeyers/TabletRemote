@@ -16,6 +16,7 @@ module.exports = function( params ) {
 
 	var oscAddress = '127.0.0.1';
 	var oscPort = '12000';
+	var heartbeat = true;
 
 	wss.on('connection', function(ws) {
 		var id = socketCounter++;
@@ -47,8 +48,14 @@ module.exports = function( params ) {
 				console.log( 'registered a server control' );
 				json.oscAddress = oscAddress;
 				json.oscPort = oscPort;
+				json.heartbeat = heartbeat;
 				ws.serverControl = true;
 				ws.send( JSON.stringify(json) );
+			}
+			else if ( json.type == 'setHeartbeat' ) {
+				heartbeat = json.heartbeat;
+				console.log( 'heartbeat: ' + heartbeat );
+				ws.send( message );
 			}
 			else if ( json.type == 'setOscInfo' ) {
 				if ( validateIpAndPort( json.oscInfo ) ) {
@@ -121,33 +128,40 @@ module.exports = function( params ) {
 		ws.remoteNum = num;
 		remotes[num-1] = ws;
 		sendRemoteStatuses();
-
-		// console.log( 'remote set to ' + num );
-		// for ( var i=0; i<remotes.length; i++ ) {
-		// 	if ( remotes[i] == undefined )
-		// 		console.log( i + ' -- undefined' );
-		// 	else if ( remotes[i] == null )
-		// 		console.log( i + ' -- null' );
-		// 	else
-		// 		console.log( i + ' -- something' );
-		// }
 	}
 
 	function validateIpAndPort(input) {
-    var parts = input.split(":");
-    var ip = parts[0].split(".");
-    var port = parts[1];
-    return validateNum(port, 1, 65535) &&
-        ip.length == 4 &&
-        ip.every(function (segment) {
-            return validateNum(segment, 0, 255);
-        });
+	    var parts = input.split(":");
+	    var ip = parts[0].split(".");
+	    var port = parts[1];
+	    return validateNum(port, 1, 65535) &&
+	        ip.length == 4 &&
+	        ip.every(function (segment) {
+	            return validateNum(segment, 0, 255);
+	        });
 	}
 
 	function validateNum(input, min, max) {
 	    var num = +input;
 	    return num >= min && num <= max && input === num.toString();
 	}
+
+	function sendOscHeartbeat() {
+		if ( !heartbeat )
+			return;
+
+		var epoch = (new Date()).getTime().toString();
+		console.log( 'epoch: ' + epoch );
+		var buf = osc.toBuffer({
+			address: '/heartbeat',
+			args: [
+				epoch
+			]
+		});
+		udp.send( buf, 0, buf.length, oscPort, oscAddress );
+	}
+
+	setInterval( sendOscHeartbeat, 1000 );
 
 	return stuff;
 }
