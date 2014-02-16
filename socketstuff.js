@@ -151,7 +151,6 @@ module.exports = function( params ) {
 			return;
 
 		var epoch = (new Date()).getTime().toString();
-		console.log( 'epoch: ' + epoch );
 		var buf = osc.toBuffer({
 			address: '/heartbeat',
 			args: [

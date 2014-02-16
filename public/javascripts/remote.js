@@ -2,6 +2,13 @@ var socket;
 
 $(document).on( 'ready', function() {
 
+	$(document).on( 'touchstart', function( e ) {
+		// e.preventDefault();
+	});
+	$(document).on( 'touchmove', function( e ) {
+		e.preventDefault();
+	});
+
 	var serverAddress = location.host.split( ":" )[0];
 	socket = new WebSocket("ws://" + serverAddress + ":8080");
 	socket.onopen = onSocketOpen;
