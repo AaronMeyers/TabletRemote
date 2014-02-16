@@ -14,6 +14,7 @@ module.exports = function( params ) {
 		ws.id = id;
 		ws.remoteNum = 0;
 		ws.serverControl = false;
+		ws.removeControl = false;
 		sockets[id] = ws;
 		console.log( 'connection opened to ' + ws.id );
 
@@ -27,6 +28,11 @@ module.exports = function( params ) {
 			else if ( json.type == 'setRemoteNum' ) {
 				// console.log ( 'sockets length: ' + sockets.length );
 				setRemoteNum( ws, json.num );
+				ws.send( message );
+			}
+			else if ( json.type == 'registerRemoteControl' ) {
+				console.log( 'registered a remote control' );
+				ws.remoteControl = true;
 				ws.send( message );
 			}
 			else if ( json.type == 'registerServerControl' ) {

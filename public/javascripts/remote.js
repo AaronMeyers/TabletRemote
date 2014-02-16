@@ -13,6 +13,9 @@ $(document).on( 'ready', function() {
 			// $('#settingsPanel').fadeOut();
 
 		}
+		else if ( json.type == 'registerRemoteControl' ) {
+			$('#settingsPanel').fadeIn();
+		}
 
 	}
 
@@ -46,7 +49,9 @@ $(document).on( 'ready', function() {
 	}
 
 	function onSocketOpen() {
-		$('#settingsPanel').fadeIn();
+		sendSocketMessage( JSON.stringify({
+			type: 	'registerRemoteControl'
+		}));
 	}
 
 	function onTouchDown( event ) {
