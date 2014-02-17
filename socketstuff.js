@@ -2,6 +2,8 @@ module.exports = function( params ) {
 
 	var stuff = {};
 	// create websocket stuff
+	var fs = require('fs');
+
 	var WebSocketServer = require('ws').Server
 	, wss = new WebSocketServer({port: 8080});
 	// create osc stuff
@@ -16,7 +18,35 @@ module.exports = function( params ) {
 
 	var oscAddress = '127.0.0.1';
 	var oscPort = '12000';
+	var touchInterval = 20;
 	var heartbeat = true;
+
+	loadSettings();
+
+	function loadSettings() {
+		fs.readFile( 'settings.json', function(err, data) {
+			if ( err )
+				console.log( err );
+			else {
+				var settings = JSON.parse( data );
+				oscAddress = settings.oscAddress;
+				oscPort = settings.oscPort;
+				touchInterval = settings.touchInterval;
+			}
+		});
+	}
+
+	function saveSettings() {
+		var settings = JSON.stringify({
+			oscAddress: oscAddress,
+			oscPort: oscPort,
+			touchInterval: touchInterval
+		}, null, 4);
+		fs.writeFile( 'settings.json', settings, function(err) {
+			if ( err )
+				console.log( 'error saving settings' );
+		});
+	}
 
 	wss.on('connection', function(ws) {
 		var id = socketCounter++;
@@ -34,7 +64,13 @@ module.exports = function( params ) {
 			var json = JSON.parse( message );
 
 			if ( json.type == 'touchCoord' ) {
-				console.log( 'touch: ' + json.x + ', ' + json.y );
+
+				if ( ws.remote3D ) {
+					sendOscTouch( '/touch3D', json.x, json.y );
+				}
+				if ( ws.remote3D ) {
+					sendOscTouch( '/touch2D', json.x, json.y );
+				}
 			}
 			else if ( json.type == 'setRemoteNum' ) {
 				// console.log ( 'sockets length: ' + sockets.length );
@@ -51,6 +87,7 @@ module.exports = function( params ) {
 				json.oscAddress = oscAddress;
 				json.oscPort = oscPort;
 				json.heartbeat = heartbeat;
+				json.touchInterval = touchInterval;
 				ws.serverControl = true;
 				ws.send( JSON.stringify(json) );
 				sendRemoteStatuses();
@@ -58,7 +95,19 @@ module.exports = function( params ) {
 			else if ( json.type == 'setHeartbeat' ) {
 				heartbeat = json.heartbeat;
 				console.log( 'heartbeat: ' + heartbeat );
+				saveSettings();
 				ws.send( message );
+			}
+			else if ( json.type == 'setTouchInterval' ) {
+				// validate the touch interval
+				var regex = /[0-9]|\./;
+				if ( regex.test( json.touchInterval ) )
+					touchInterval = json.touchInterval;
+				else
+					console.log ('invalid touch interval' );
+				json.touchInterval = touchInterval;
+				saveSettings();
+				ws.send( JSON.stringify( json ) );
 			}
 			else if ( json.type == 'setOscInfo' ) {
 				if ( validateIpAndPort( json.oscInfo ) ) {
@@ -66,6 +115,7 @@ module.exports = function( params ) {
 					var parts = json.oscInfo.split( ':' );
 					oscAddress = parts[0];
 					oscPort = parts[1];
+					saveSettings();
 				}
 				else
 					console.log( 'invalid' );
@@ -79,6 +129,13 @@ module.exports = function( params ) {
 			else if ( json.type == 'setRemote2D' ) {
 				setRemote2D( remotes[json.num-1] );
 				sendRemoteStatuses();
+			}
+			else if ( json.type == 'showSettings' ) {
+				if ( remotes[json.num-1] != undefined ) {
+					remotes[json.num-1].send(JSON.stringify({
+						type: 'showSettings'
+					}));
+				}
 			}
 		});
 
@@ -115,8 +172,16 @@ module.exports = function( params ) {
 					remotes: remoteInfos
 				}));
 			}
-			else
-				console.log( s + ' not server control' );
+		}
+
+		for ( var i=0; i<remotes.length; i++ ) {
+			if ( remotes[i] == undefined )
+				continue;
+			remotes[i].send(JSON.stringify({
+				type: 'setActive',
+				active: remotes[i].remote3D || remotes[i].remote2D,
+				touchInterval: touchInterval
+			}));
 		}
 	}
 
@@ -177,6 +242,17 @@ module.exports = function( params ) {
 	function validateNum(input, min, max) {
 	    var num = +input;
 	    return num >= min && num <= max && input === num.toString();
+	}
+
+	function sendOscTouch( address, x, y ) {
+		var buf = osc.toBuffer({
+			address: address,
+			args: [
+				x,
+				y
+			]
+		});
+		udp.send( buf, 0, buf.length, oscPort, oscAddress );
 	}
 
 	function sendOscHeartbeat() {

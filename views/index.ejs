@@ -11,20 +11,34 @@
 		<form id="settingsForm" class="form-horizontal">
 			<div class="form-group">
 
+
+				<label for="touchIntervalInput" class="col-xs-3 control-label">Touch Interval (ms)</label>
+				<div class="col-xs-9" style="padding-bottom: 5px;">
+					<div class="input-group">
+						<input id="touchIntervalInput" type="number" class="form-control" placeholder="Touch Interval (ms)">
+						<span class="input-group-btn">
+								<button id="touchIntervalButton" class="btn btn-default" type="button">SET</button>
+						</span>
+					</div>
+				</div>
+
 				<label for="oscAddressInput" class="col-xs-3 control-label">OSC Address</label>
 				<div class="col-xs-9">
 					<div class="input-group">
 						<input id="oscAddressInput" type="text" class="form-control" placeholder="OSC Address">
 						<span class="input-group-btn">
-							<button id="oscAddressButton" class="btn btn-default" type="button">Go!</button>
+							<button id="oscAddressButton" class="btn btn-default" type="button">SET</button>
 						</span>
 					</div><!-- /input-group -->
 				</div>
+				<br/>
 
 				<label for="heartbeatToggle" class="col-xs-3 control-label">OSC Heartbeat</label>
 				<div class="col-xs-9">
 					<input id="heartbeatToggle" type="checkbox" style="vertical-align: -webkit-baseline-middle">
 				</div>
+				<br/>
+
 			</div>
 		</form>
 		<br/>
@@ -50,12 +64,9 @@
 								<div class="btn btn-default active2DButton" remote="<%= i+1 %>">
 									Active 2D Remote
 								</div>
-								<!-- <label class="btn btn-default" <%= remotes[i]==undefined?'disabled':'' %>>
-									<input id="active3D<%= i+1 %>" class="active3DToggle" type="checkbox" remote="<%= i+1 %>">Active 3D Remote
-								</label>
-								<label class="btn btn-default" <%= remotes[i]==undefined?'disabled':'' %>>
-									<input id="active2D<%= i+1 %>" class="active2DToggle" type="checkbox">Active 2D Remote
-								</label> -->
+								<div class="btn btn-default showSettingsButton" remote="<%=i+1%>">
+									Show Settings
+								</div>
 							</div>
 						</div>
 

@@ -9,6 +9,7 @@ $(document).on( 'ready', function() {
 			var oscInfo = json.oscAddress + ':' + json.oscPort;
 			$('#oscAddressInput').val( oscInfo );
 			$('#controlPanel').fadeIn();
+			$('#touchIntervalInput').val( json.touchInterval );
 			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
 		}
 		else if ( json.type == 'remoteInfo' ) {
@@ -20,6 +21,11 @@ $(document).on( 'ready', function() {
 			$('#oscAddressInput').removeAttr( 'disabled' );
 			$('#oscAddressButton').removeAttr( 'disabled' );
 		}
+		else if ( json.type == 'setTouchInterval' ) {
+			$('#touchIntervalInput').val( json.touchInterval );
+			$('#touchIntervalInput').removeAttr( 'disabled' );
+			$('#touchIntervalButton').removeAttr( 'disabled' );
+		}
 		else if ( json.type == 'setHeartbeat' ) {
 			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
 		}
@@ -27,6 +33,14 @@ $(document).on( 'ready', function() {
 
 	// $('.btn').button();
 
+	$('#touchIntervalInput').bind( 'enterKey', touchIntervalEntered );
+	$('#touchIntervalInput').keyup( function(e) {
+		if ( e.keyCode == 13 ) {
+			$(this).trigger('enterKey');
+			e.preventDefault();
+		}
+	});
+	$('#touchIntervalButton').on( 'click', touchIntervalEntered );
 
 	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered );
 	$('#oscAddressInput').keyup(function(e){
@@ -66,11 +80,29 @@ $(document).on( 'ready', function() {
 		}));
 	});
 
+	$('.showSettingsButton').click(function() {
+		sendSocketMessage(JSON.stringify({
+			type:'showSettings',
+			num: $(this).attr('remote')
+		}));
+	});
+
 	// disable form submit behavior
 	$('form').submit( function(e) {
 		e.preventDefault();
 		return false;
 	});
+
+	function touchIntervalEntered() {
+		$('#touchIntervalInput').blur();
+		$('#touchIntervalButton').blur();
+		$('#touchIntervalInput').attr( 'disabled', 'disabled' );
+		$('#touchIntervalButton').attr( 'disabled', 'disabled' );
+		sendSocketMessage(JSON.stringify({
+			type: 'setTouchInterval',
+			touchInterval: $('#touchIntervalInput').val()
+		}))
+	}
 
 	function oscInfoEntered() {
 		console.log( 'oscInfoEntered' );

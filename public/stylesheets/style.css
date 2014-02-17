@@ -12,6 +12,15 @@ a {
 	-webkit-user-select:none;
 }
 
+.finger {
+	width: 64px;
+	height: 64px;
+	position: absolute;
+	z-index: -10;
+	display: none;
+	pointer-events: none;
+}
+
 .remoteBox {
 	border-radius: 4px;
 	border: 1px solid #ddd;
