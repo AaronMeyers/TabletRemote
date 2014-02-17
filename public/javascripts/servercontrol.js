@@ -25,6 +25,8 @@ $(document).on( 'ready', function() {
 		}
 	}
 
+	// $('.btn').button();
+
 
 	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered );
 	$('#oscAddressInput').keyup(function(e){
@@ -40,6 +42,27 @@ $(document).on( 'ready', function() {
 		sendSocketMessage( JSON.stringify({
 			type: 'setHeartbeat',
 			heartbeat: $(this).prop('checked')
+		}));
+	});
+
+	// $('.active3DToggle').change(function() {
+	$('.active3DButton').click(function() {
+		if ( $(this).hasClass( 'btn-success' ) )
+			return;
+		var remoteNum = $(this).attr('remote');
+		sendSocketMessage(JSON.stringify({
+			type: 'setRemote3D',
+			num: remoteNum
+		}));
+	});
+
+	$('.active2DButton').click(function(){
+		if ( $(this).hasClass('btn-success') )
+			return;
+		var remoteNum = $(this).attr('remote');
+		sendSocketMessage(JSON.stringify({
+			type: 'setRemote2D',
+			num: remoteNum
 		}));
 	});
 
@@ -81,9 +104,22 @@ $(document).on( 'ready', function() {
 	function updateRemoteInfo( remotes ) {
 
 		for ( var i=0; i<remotes.length; i++ ) {
+			var remoteBox = $('#remoteBox'+(i+1));
+
 			$('#remoteStatus'+(i+1)).html( remotes[i].connected?'CONNECTED':'DISCONNECTED' );
 			$('#remoteStatus'+(i+1)).addClass( remotes[i].connected?'label-success':'label-danger' );
 			$('#remoteStatus'+(i+1)).removeClass( remotes[i].connected?'label-danger':'label-success' );
+
+			if ( remotes[i].connected ) {
+				remoteBox.find('.btn').removeAttr( 'disabled' );
+				var is3D = remotes[i].remote3D;
+				var is2D = remotes[i].remote2D;
+				remoteBox.find('.active3DButton').addClass( is3D?'btn-success':'' ).removeClass( is3D?'':'btn-success');
+				remoteBox.find('.active2DButton').addClass( is2D?'btn-success':'' ).removeClass( is2D?'':'btn-success');
+			}
+			else {
+				remoteBox.find('.btn').attr( 'disabled', 'disabled' ).removeClass( 'btn-success' );
+			}
 		}
 
 	}

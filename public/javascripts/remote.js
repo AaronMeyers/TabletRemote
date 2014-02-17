@@ -34,6 +34,10 @@ $(document).on( 'ready', function() {
 	$(window).on( 'mouseup', onTouchUp );
 	$(window).on( 'mousemove', onTouchMove );
 
+	$(window).on( 'touchstart', onTouchDown );
+	$(window).on( 'touchend', onTouchUp );
+	$(window).on( 'touchmove', onTouchMove );
+
 	$('.remoteNumButton').on( 'click', function( event ) {
 		var num = parseInt( event.target.innerHTML );
 		console.log( num );

@@ -35,8 +35,29 @@
 			</div>
 			<div class="panel-body">
 				<% for ( var i=0; i<remotes.length; i++ ) { %>
-					<div class="remoteBox">
-						<span class="remoteNumber"><%=i+1%>:</span> <span id="remoteStatus<%=i+1%>" class="label label-<%=remotes[i]==undefined?'danger':'success'%>"><%= remotes[i]==undefined?'DISCONNECTED':'CONNECTED' %></span>
+					<div class="remoteBox" id="remoteBox<%=i+1%>">
+						<div class="row">
+							<div class="col-xs-3">
+								<span class="remoteNumber"><%=i+1%>:</span> <span id="remoteStatus<%=i+1%>" class="label label-<%=remotes[i]==undefined?'danger':'success'%>"><%= remotes[i]==undefined?'DISCONNECTED':'CONNECTED' %></span>
+							</div>
+						</div>
+						<div class="row">
+							<!-- <div class="btn-group col-xs-12 btn-group-justified" data-toggle="buttons"> -->
+							<div class="btn-group col-xs-12 btn-group-justified">
+								<div class="btn btn-default active3DButton" remote="<%= i+1 %>">
+									Active 3D Remote
+								</div>
+								<div class="btn btn-default active2DButton" remote="<%= i+1 %>">
+									Active 2D Remote
+								</div>
+								<!-- <label class="btn btn-default" <%= remotes[i]==undefined?'disabled':'' %>>
+									<input id="active3D<%= i+1 %>" class="active3DToggle" type="checkbox" remote="<%= i+1 %>">Active 3D Remote
+								</label>
+								<label class="btn btn-default" <%= remotes[i]==undefined?'disabled':'' %>>
+									<input id="active2D<%= i+1 %>" class="active2DToggle" type="checkbox">Active 2D Remote
+								</label> -->
+							</div>
+						</div>
 
 					<% if ( remotes[i] == undefined ) { %>
 						<!-- <div> <%= i %> is undefined</div> -->

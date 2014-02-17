@@ -24,6 +24,8 @@ module.exports = function( params ) {
 		ws.remoteNum = 0;
 		ws.serverControl = false;
 		ws.removeControl = false;
+		ws.remote3D = false;
+		ws.remote2D = false;
 		sockets[id] = ws;
 		console.log( 'connection opened to ' + ws.id );
 
@@ -51,6 +53,7 @@ module.exports = function( params ) {
 				json.heartbeat = heartbeat;
 				ws.serverControl = true;
 				ws.send( JSON.stringify(json) );
+				sendRemoteStatuses();
 			}
 			else if ( json.type == 'setHeartbeat' ) {
 				heartbeat = json.heartbeat;
@@ -69,11 +72,25 @@ module.exports = function( params ) {
 				json.oscInfo = oscAddress + ':' + oscPort;
 				ws.send( JSON.stringify( json ) );
 			}
+			else if ( json.type == 'setRemote3D' ) {
+				setRemote3D( remotes[json.num-1] );
+				sendRemoteStatuses();
+			}
+			else if ( json.type == 'setRemote2D' ) {
+				setRemote2D( remotes[json.num-1] );
+				sendRemoteStatuses();
+			}
 		});
 
 		ws.on('close', function() {
 			console.log( 'socket closed with id: ' + ws.id );
+			// if its a remote, clean it up
+			for ( var i=0; i<remotes.length; i++ ) {
+				if ( remotes[i] == ws )
+					remotes[i] = undefined
+			}
 			delete sockets[ws.id];
+			sendRemoteStatuses();
 		});
 	});
 
@@ -82,8 +99,11 @@ module.exports = function( params ) {
 		var remoteInfos = new Array();
 		// fill in whatever info about each remote we want to send
 		for ( var i=0; i<remotes.length; i++ ) {
+			var exists = remotes[i]!=undefined;
 			remoteInfos.push({
-				connected: remotes[i]!=undefined
+				connected: exists,
+				remote3D: exists?remotes[i].remote3D:false,
+				remote2D: exists?remotes[i].remote2D:false
 			});
 		}
 
@@ -98,23 +118,36 @@ module.exports = function( params ) {
 			else
 				console.log( s + ' not server control' );
 		}
-
-		var outport = 12000;
-		var buf = osc.toBuffer({
-			address: '/heartbeat',
-			args: [
-				12,
-				'sttttring',
-				new Buffer( 'beat' ),
-				{type: 'integer', value: 7}
-			]
-		});
-		udp.send( buf, 0, buf.length, outport, '127.0.0.1' );
 	}
 
 	function removeRemote( ws ) {
 		if ( ws.remoteNum > 0 && remotes[ws.remoteNum-1] == ws ) {
 			remote[ws.remoteNum-1] = undefined;
+		}
+	}
+
+	function setRemote3D( ws ) {
+		if ( ws == undefined ) {
+			console.log( 'remote for 3D was undefined')
+			return;
+		}
+		ws.remote3D = true;
+		// make sure no other remotes have their remote3D flag on
+		for ( var i=0; i<remotes.length; i++ ) {
+			if ( remotes[i] != undefined && remotes[i].remote3D && remotes[i] != ws ) 
+				remotes[i].remote3D = false;
+		}
+	}
+	function setRemote2D( ws ) {
+		if ( ws == undefined ) {
+			console.log( 'remote for 2D was undefined')
+			return;
+		}
+		ws.remote2D = true;
+		// make sure no other remotes have their remote3D flag on
+		for ( var i=0; i<remotes.length; i++ ) {
+			if ( remotes[i] != undefined && remotes[i].remote2D && remotes[i] != ws ) 
+				remotes[i].remote2D = false;
 		}
 	}
 
