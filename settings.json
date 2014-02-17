@@ -1,0 +1,5 @@
+{
+    "oscAddress": "127.0.0.1",
+    "oscPort": "12000",
+    "touchInterval": "20"
+}
