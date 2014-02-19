@@ -8,6 +8,8 @@ $(document).on( 'ready', function() {
 	var touchX = 0, touchY = 0;
 	var touchIntervalId;
 
+	var mobileClient =  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
 	var width, height;
 
 	$(document).on( 'touchstart', function( e ) {
@@ -56,13 +58,16 @@ $(document).on( 'ready', function() {
 		onResize();
 	}
 
-	$('.iphone').on( 'mousedown', onTouchDown );
-	$(window).on( 'mouseup', onTouchUp );
-	$(window).on( 'mousemove', onTouchMove );
-
-	$('.iphone').on( 'touchstart', onTouchDown );
-	$(window).on( 'touchend', onTouchUp );
-	$(window).on( 'touchmove', onTouchMove );
+	if ( mobileClient ) {
+		$('.iphone').on( 'touchstart', onTouchDown );
+		$(window).on( 'touchend', onTouchUp );
+		$(window).on( 'touchmove', onTouchMove );
+	}
+	else {
+		$('.iphone').on( 'mousedown', onTouchDown );
+		$(window).on( 'mouseup', onTouchUp );
+		$(window).on( 'mousemove', onTouchMove );
+	}
 
 	$('.remoteNumButton').on( 'click', function( event ) {
 		var num = parseInt( event.target.innerHTML );
@@ -75,6 +80,7 @@ $(document).on( 'ready', function() {
 	});
 
 	$('#hideSettingsButton').on( 'click', function(event) {
+		console.log( 'hello' );
 		$('#settingsPanel').fadeOut();
 	});
 

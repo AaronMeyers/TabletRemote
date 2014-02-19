@@ -12,6 +12,11 @@ a {
 	-webkit-user-select:none;
 }
 
+#settingsPanel {
+	position: absolute;
+	z-index: 10;
+}
+
 .finger {
 	width: 64px;
 	height: 64px;
