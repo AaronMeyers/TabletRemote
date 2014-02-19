@@ -8,6 +8,8 @@ $(document).on( 'ready', function() {
 	var touchX = 0, touchY = 0;
 	var touchIntervalId;
 
+	var width, height;
+
 	$(document).on( 'touchstart', function( e ) {
 		// e.preventDefault();
 	});
@@ -50,17 +52,15 @@ $(document).on( 'ready', function() {
 			$('#activityStatus').text( (isActive?'ACTIVE/':'INACTIVE/') + remoteNum ).addClass( isActive?'btn-success':'btn-danger').removeClass( isActive?'btn-danger':'btn-success' );
 		}
 
+		$(window).on( 'resize', onResize );
+		onResize();
 	}
 
-	// socket.onmessage = function (event) {
-	// 	console.log(event.data);
-	// }
-
-	$(window).on( 'mousedown', onTouchDown );
+	$('.iphone').on( 'mousedown', onTouchDown );
 	$(window).on( 'mouseup', onTouchUp );
 	$(window).on( 'mousemove', onTouchMove );
 
-	$(window).on( 'touchstart', onTouchDown );
+	$('.iphone').on( 'touchstart', onTouchDown );
 	$(window).on( 'touchend', onTouchUp );
 	$(window).on( 'touchmove', onTouchMove );
 
@@ -79,6 +79,16 @@ $(document).on( 'ready', function() {
 	});
 
 	var isTouched = false;
+
+	function onResize( e ) {
+		width = $(window).width(),
+		height = $(window).height();
+
+		$('.iphone').css({
+			width: width,
+			height: height
+		});
+	}
 
 	function sendSocketMessage( jsonString ) {
 		if ( socket.readyState == WebSocket.OPEN ) {
@@ -122,7 +132,7 @@ $(document).on( 'ready', function() {
 		$('.finger').css('left', touchX - $('.finger').width()/2 + 'px' );
 		$('.finger').css('top', touchY - $('.finger').height()/2 + 'px' );
 		$('.finger').show();
-
+		sendTouch( 'start' );
 	}
 
 	function onTouchUp( event ) {
@@ -147,14 +157,23 @@ $(document).on( 'ready', function() {
 	function touchEnded() {
 		clearInterval( touchIntervalId );
 		$('.finger').fadeOut();
+		sendTouch( 'end' );
 	}
 
-	function sendTouch() {
-		if ( isTouched && isActive ) {
+	function sendTouch( phase ) {
+		if ( isActive && ( isTouched || phase == "end" ) ) {
+
+
+			if ( phase == undefined )
+				phase = 'move';
+
 			sendSocketMessage( JSON.stringify({
 				type: 	'touchCoord',
+				phase:  phase,
 				x: 		touchX,
-				y: 		touchY
+				y: 		touchY,
+				w: 		width,
+				h: 		height,
 			}) );
 		}
 
@@ -176,14 +195,6 @@ $(document).on( 'ready', function() {
 
 		$('.finger').css('left', touchX - $('.finger').width()/2 + 'px' );
 		$('.finger').css('top', touchY - $('.finger').height()/2 + 'px' );
-
-		// if ( isTouched ) {
-		// 	sendSocketMessage( JSON.stringify({
-		// 		type: 	'touchCoord',
-		// 		x: 		event.clientX,
-		// 		y: 		event.clientY
-		// 	}) );
-		// }
 	}
 
 });

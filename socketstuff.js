@@ -31,6 +31,7 @@ module.exports = function( params ) {
 				var settings = JSON.parse( data );
 				oscAddress = settings.oscAddress;
 				oscPort = settings.oscPort;
+				heartbeat = settings.heartbeat;
 				touchInterval = settings.touchInterval;
 			}
 		});
@@ -40,6 +41,7 @@ module.exports = function( params ) {
 		var settings = JSON.stringify({
 			oscAddress: oscAddress,
 			oscPort: oscPort,
+			heartbeat: heartbeat,
 			touchInterval: touchInterval
 		}, null, 4);
 		fs.writeFile( 'settings.json', settings, function(err) {
@@ -66,10 +68,10 @@ module.exports = function( params ) {
 			if ( json.type == 'touchCoord' ) {
 
 				if ( ws.remote3D ) {
-					sendOscTouch( '/touch3D', json.x, json.y );
+					sendOscTouch( '/touch3D', json.phase, json.x, json.y, json.w, json.h );
 				}
-				if ( ws.remote3D ) {
-					sendOscTouch( '/touch2D', json.x, json.y );
+				if ( ws.remote2D ) {
+					sendOscTouch( '/touch2D', json.phase, json.x, json.y, json.w, json.h );
 				}
 			}
 			else if ( json.type == 'setRemoteNum' ) {
@@ -81,6 +83,38 @@ module.exports = function( params ) {
 				console.log( 'registered a remote control' );
 				ws.remoteControl = true;
 				ws.send( message );
+
+				// temporary solution for auto-assigning remote #'s and making them active
+				// first find the next available slot
+				var remoteNum;
+				var remote3D = false;
+				var remote2D = false;
+				for ( var i=0; i<remotes.length; i++ ) {
+					if ( remotes[i] == undefined && remoteNum == undefined )
+						remoteNum = i+1;
+					if ( remotes[i] != undefined && remotes[i].remote3D )
+						remote3D = true;
+					if ( remotes[i] != undefined && remotes[i].remote2D )
+						remote2D = true;
+				}
+
+				console.log( 'remote3D: ' + remote3D );
+				console.log( 'remote2D: ' + remote2D );
+				setRemoteNum( ws, remoteNum );
+				ws.send(JSON.stringify({
+					type: 'setRemoteNum',
+					num: remoteNum
+				}));
+				// if there is not active 3D remote, activate this one
+				if ( !remote3D ) {
+					setRemote3D( ws );
+					sendRemoteStatuses();
+				}
+				else if ( !remote2D ) {
+					setRemote2D( ws );
+					sendRemoteStatuses();
+				}
+				// next make it active
 			}
 			else if ( json.type == 'registerServerControl' ) {
 				console.log( 'registered a server control' );
@@ -244,12 +278,15 @@ module.exports = function( params ) {
 	    return num >= min && num <= max && input === num.toString();
 	}
 
-	function sendOscTouch( address, x, y ) {
+	function sendOscTouch( address, phase, x, y, w, h ) {
 		var buf = osc.toBuffer({
 			address: address,
 			args: [
+				phase,
 				x,
-				y
+				y,
+				w,
+				h
 			]
 		});
 		udp.send( buf, 0, buf.length, oscPort, oscAddress );
