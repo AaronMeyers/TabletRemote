@@ -42,6 +42,10 @@ app.get( '/remote',  function( req, res ) {
   res.render( 'remote', { user: req.user });
 });
 
+app.get( '/multitouch', function( req, res ) {
+  res.render( 'multitouch' );
+});
+
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });

@@ -19,44 +19,60 @@ $(document).on( 'ready', function() {
 		e.preventDefault();
 	});
 
-	var serverAddress = location.host.split( ":" )[0];
-	socket = new WebSocket("ws://" + serverAddress + ":8080");
-	socket.onopen = onSocketOpen;
-	socket.onmessage = function( message ) {
-
-		var json = JSON.parse( message.data );
-		if ( json.type == 'setRemoteNum' ) {
-			remoteNum = json.num;
-			console.log( 'remote set to ' + remoteNum );
-			// $('#settingsPanel').fadeOut();
-			$('#activityStatus').text( isActive?'ACTIVE/':'INACTIVE/' + remoteNum );
-
+	function initWebSocket() {
+		var serverAddress = location.host.split( ":" )[0];
+		socket = new WebSocket("ws://" + serverAddress + ":8080");
+		socket.onopen = onSocketOpen;
+		socket.onclose = function( e ) {
+			if ( socket.readyState != WebSocket.OPEN ) {
+				$('#activityStatus').text( 'DISCONNECTED' ).addClass( 'btn-danger' ).removeClass( 'btn-success' );
+				// initWebSocket();
+				setTimeout( initWebSocket, 1000 );
+			}
+			
 		}
-		else if ( json.type == 'registerRemoteControl' ) {
-			$('#settingsPanel').fadeIn();
+		socket.onerror = function( e ) {
+			console.log( 'socket error' );
 		}
-		else if ( json.type == 'showSettings' ) {
-			if ( $('#settingsPanel').is(':visible') )
-				$('#settingsPanel').fadeOut();
-			else
+		socket.onmessage = function( message ) {
+
+			var json = JSON.parse( message.data );
+			if ( json.type == 'setRemoteNum' ) {
+				remoteNum = json.num;
+				console.log( 'remote set to ' + remoteNum );
+				// $('#settingsPanel').fadeOut();
+				$('#activityStatus').text( isActive?'ACTIVE/':'INACTIVE/' + remoteNum );
+
+			}
+			else if ( json.type == 'registerRemoteControl' ) {
 				$('#settingsPanel').fadeIn();
-		}
-		else if ( json.type == 'setActive' ) {
-			if ( isActive && !json.active ) {
-				console.log( 'becoming inactive' );
-				isActive = json.active;
 			}
-			else if ( !isActive && json.active ) {
-				console.log( 'becoming active' );
-				isActive = json.active;
+			else if ( json.type == 'showSettings' ) {
+				if ( $('#settingsPanel').is(':visible') )
+					$('#settingsPanel').fadeOut();
+				else
+					$('#settingsPanel').fadeIn();
 			}
-			touchInterval = json.touchInterval;
-			$('#activityStatus').text( (isActive?'ACTIVE/':'INACTIVE/') + remoteNum ).addClass( isActive?'btn-success':'btn-danger').removeClass( isActive?'btn-danger':'btn-success' );
-		}
+			else if ( json.type == 'setActive' ) {
+				if ( isActive && !json.active ) {
+					console.log( 'becoming inactive' );
+					isActive = json.active;
+				}
+				else if ( !isActive && json.active ) {
+					console.log( 'becoming active' );
+					isActive = json.active;
+				}
+				touchInterval = json.touchInterval;
+				$('#activityStatus').text( (isActive?'ACTIVE/':'INACTIVE/') + remoteNum ).addClass( isActive?'btn-success':'btn-danger').removeClass( isActive?'btn-danger':'btn-success' );
+			}
 
-		$(window).on( 'resize', onResize );
-		onResize();
+			$(window).on( 'resize', onResize );
+			onResize();
+		}
 	}
+	initWebSocket();
+
+	
 
 	if ( mobileClient ) {
 		$('.iphone').on( 'touchstart', onTouchDown );

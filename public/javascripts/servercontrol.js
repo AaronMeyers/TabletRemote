@@ -1,37 +1,58 @@
-$(document).on( 'ready', function() {
+var socket;
 
-	var serverAddress = location.host.split( ":" )[0];
-	socket = new WebSocket("ws://" + serverAddress + ":8080");
-	socket.onopen = onSocketOpen;
-	socket.onmessage = function( message ) {
-		var json = JSON.parse( message.data );
-		if ( json.type == 'registerServerControl' ) {
-			var oscInfo = json.oscAddress + ':' + json.oscPort;
-			$('#oscAddressInput').val( oscInfo );
-			$('#controlPanel').fadeIn();
-			$('#touchIntervalInput').val( json.touchInterval );
-			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+$(document).on( 'ready', function() {
+	function initWebSocket() {
+		var serverAddress = location.host.split( ":" )[0];
+		socket = new WebSocket("ws://" + serverAddress + ":8080");
+		socket.onopen = function() {
+			$('#server-panel-title').html( 'SERVER CONTROL' );
+
+			console.log( 'server controls socket connection open' );
+			sendSocketMessage(JSON.stringify({
+				type: 	'registerServerControl'
+			}));
 		}
-		else if ( json.type == 'remoteInfo' ) {
-			updateRemoteInfo( json.remotes );
+		socket.onclose = function() {
+			if ( socket.readyState != WebSocket.OPEN ) {
+				$('#server-panel-title').html( 'SERVER CONTROL - DISCONNECTED' );
+			}
+			updateRemoteInfo([
+				{connected:false},
+				{connected:false},
+				{connected:false},
+				{connected:false}
+			]);
+			setTimeout( initWebSocket, 1000 );
 		}
-		else if ( json.type == 'setOscInfo' ) {
-			console.log( 'osc info: ' + json.oscInfo );
-			$('#oscAddressInput').val( json.oscInfo );
-			$('#oscAddressInput').removeAttr( 'disabled' );
-			$('#oscAddressButton').removeAttr( 'disabled' );
-		}
-		else if ( json.type == 'setTouchInterval' ) {
-			$('#touchIntervalInput').val( json.touchInterval );
-			$('#touchIntervalInput').removeAttr( 'disabled' );
-			$('#touchIntervalButton').removeAttr( 'disabled' );
-		}
-		else if ( json.type == 'setHeartbeat' ) {
-			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+		socket.onmessage = function( message ) {
+			var json = JSON.parse( message.data );
+			if ( json.type == 'registerServerControl' ) {
+				var oscInfo = json.oscAddress + ':' + json.oscPort;
+				$('#oscAddressInput').val( oscInfo );
+				$('#controlPanel').fadeIn();
+				$('#touchIntervalInput').val( json.touchInterval );
+				$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+			}
+			else if ( json.type == 'remoteInfo' ) {
+				updateRemoteInfo( json.remotes );
+			}
+			else if ( json.type == 'setOscInfo' ) {
+				console.log( 'osc info: ' + json.oscInfo );
+				$('#oscAddressInput').val( json.oscInfo );
+				$('#oscAddressInput').removeAttr( 'disabled' );
+				$('#oscAddressButton').removeAttr( 'disabled' );
+			}
+			else if ( json.type == 'setTouchInterval' ) {
+				$('#touchIntervalInput').val( json.touchInterval );
+				$('#touchIntervalInput').removeAttr( 'disabled' );
+				$('#touchIntervalButton').removeAttr( 'disabled' );
+			}
+			else if ( json.type == 'setHeartbeat' ) {
+				$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+			}
 		}
 	}
-
-	// $('.btn').button();
+	initWebSocket();
 
 	$('#touchIntervalInput').bind( 'enterKey', touchIntervalEntered );
 	$('#touchIntervalInput').keyup( function(e) {
@@ -116,14 +137,6 @@ $(document).on( 'ready', function() {
 		}));
 	}
 
-	function onSocketOpen() {
-
-		console.log( 'server controls socket connection open' );
-		sendSocketMessage( JSON.stringify({
-			type: 	'registerServerControl'
-		}));
-	}
-
 	function sendSocketMessage( jsonString ) {
 		if ( socket.readyState == WebSocket.OPEN ) {
 			socket.send( jsonString );
@@ -141,6 +154,7 @@ $(document).on( 'ready', function() {
 			$('#remoteStatus'+(i+1)).html( remotes[i].connected?'CONNECTED':'DISCONNECTED' );
 			$('#remoteStatus'+(i+1)).addClass( remotes[i].connected?'label-success':'label-danger' );
 			$('#remoteStatus'+(i+1)).removeClass( remotes[i].connected?'label-danger':'label-success' );
+			// $('#remoteAddress'+(i+1)).html( 'Address: ' + remotes[i].address );
 
 			if ( remotes[i].connected ) {
 				remoteBox.find('.btn').removeAttr( 'disabled' );

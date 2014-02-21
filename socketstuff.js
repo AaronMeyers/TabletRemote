@@ -59,7 +59,8 @@ module.exports = function( params ) {
 		ws.remote3D = false;
 		ws.remote2D = false;
 		sockets[id] = ws;
-		console.log( 'connection opened to ' + ws.id );
+		// console.log( 'connection opened to ' + ws.id + ' at ' + ws.url );
+		// console.log( ws );
 
 		ws.on('message', function(message) {
 			// HANDLE INCOMING MESSAGES
@@ -191,8 +192,12 @@ module.exports = function( params ) {
 		// fill in whatever info about each remote we want to send
 		for ( var i=0; i<remotes.length; i++ ) {
 			var exists = remotes[i]!=undefined;
+			if ( exists ) {
+				// console.log( 'socket address: ' + remotes[i].address );
+			}
 			remoteInfos.push({
 				connected: exists,
+				address: exists?remotes[i].address:undefined,
 				remote3D: exists?remotes[i].remote3D:false,
 				remote2D: exists?remotes[i].remote2D:false
 			});
