@@ -8,6 +8,13 @@ $(document).on( 'ready', function() {
 	var touchX = 0, touchY = 0;
 	var touchIntervalId;
 
+	var activeTouches = {};
+	var fingerWidth = $('#clonablefinger').width();
+	var fingerHeight = $('#clonablefinger').height();
+	var canvas = $('#canvas')[0];
+	var framerate = 1000/60;
+	var fingerImg = $('#clonablefinger').find('img')[0];
+
 	var mobileClient =  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 	var width, height;
@@ -92,7 +99,6 @@ $(document).on( 'ready', function() {
 			type: 	'setRemoteNum',
 			num: 	num
 		}) );
-
 	});
 
 	$('#hideSettingsButton').on( 'click', function(event) {
@@ -128,7 +134,6 @@ $(document).on( 'ready', function() {
 	}
 
 	function onTouchDown( event ) {
-		console.log( 'on touch down' );
 		var isMobile = event.originalEvent instanceof TouchEvent;
 		if ( isMobile ) {
 			var touchEvent = event.originalEvent;

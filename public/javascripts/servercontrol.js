@@ -16,12 +16,11 @@ $(document).on( 'ready', function() {
 			if ( socket.readyState != WebSocket.OPEN ) {
 				$('#server-panel-title').html( 'SERVER CONTROL - DISCONNECTED' );
 			}
-			updateRemoteInfo([
-				{connected:false},
-				{connected:false},
-				{connected:false},
-				{connected:false}
-			]);
+			var fakeRemotes = [];
+			for ( var i=0; i<4; i++ )
+				fakeRemotes.push( {connected:false} );
+			updateRemoteInfo(fakeRemotes);
+			
 			setTimeout( initWebSocket, 1000 );
 		}
 		socket.onmessage = function( message ) {
