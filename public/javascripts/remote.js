@@ -26,10 +26,32 @@ $(document).on( 'ready', function() {
 		e.preventDefault();
 	});
 
+	function loop() {
+		var ctx = canvas.getContext( "2d" );
+		ctx.fillStyle = "rgba(0,0,0,.05)";
+		ctx.fillRect( 0, 0, width, height );
+		var size = 64;
+		var keys = Object.keys( activeTouches );
+		for ( var i=0; i<keys.length; i++ ) {
+			var touch = activeTouches[keys[i]];
+			ctx.drawImage( fingerImg, touch.x - size/2, touch.y - size/2, size, size );
+		}
+
+		if ( requestAnimationFrame )
+			requestAnimationFrame( loop, framerate );			
+		else
+			setTimeout( loop, framerate );
+	}
+	loop();
+
 	function initWebSocket() {
 		var serverAddress = location.host.split( ":" )[0];
 		socket = new WebSocket("ws://" + serverAddress + ":8080");
-		socket.onopen = onSocketOpen;
+		socket.onopen = function() {
+			sendSocketMessage( JSON.stringify({
+				type: 	'registerRemoteControl'
+			}));
+		};
 		socket.onclose = function( e ) {
 			if ( socket.readyState != WebSocket.OPEN ) {
 				$('#activityStatus').text( 'DISCONNECTED' ).addClass( 'btn-danger' ).removeClass( 'btn-success' );
@@ -79,18 +101,9 @@ $(document).on( 'ready', function() {
 	}
 	initWebSocket();
 
-	
-
-	if ( mobileClient ) {
-		$('.iphone').on( 'touchstart', onTouchDown );
-		$(window).on( 'touchend', onTouchUp );
-		$(window).on( 'touchmove', onTouchMove );
-	}
-	else {
-		$('.iphone').on( 'mousedown', onTouchDown );
-		$(window).on( 'mouseup', onTouchUp );
-		$(window).on( 'mousemove', onTouchMove );
-	}
+	$('.iphone').on( 'touchstart', onTouchStart );
+	$(window).on( 'touchend', onTouchEnd );
+	$(window).on( 'touchmove', onTouchMove );
 
 	$('.remoteNumButton').on( 'click', function( event ) {
 		var num = parseInt( event.target.innerHTML );
@@ -116,6 +129,8 @@ $(document).on( 'ready', function() {
 			width: width,
 			height: height
 		});
+		canvas.width = width;
+		canvas.height = height;
 	}
 
 	function sendSocketMessage( jsonString ) {
@@ -127,12 +142,98 @@ $(document).on( 'ready', function() {
 		}
 	}
 
-	function onSocketOpen() {
-		sendSocketMessage( JSON.stringify({
-			type: 	'registerRemoteControl'
+	function onTouchStart( e ) {
+		var touchEvent = e.originalEvent;
+		for ( var i=0; i<touchEvent.changedTouches.length; i++ ) {
+			var touch = touchEvent.changedTouches[i];
+
+			var finger = $('#clonablefinger')
+				.clone()
+				.attr( 'id', 'finger' + touch.identifier )
+				.css({
+					top: touch.clientY - fingerHeight/2,
+					left: touch.clientX - fingerWidth/2,
+					display: 'block'
+				});
+			$('.iphone').append( finger );
+
+			if ( activeTouches[touch.identifier] == undefined ) {
+				activeTouches[touch.identifier] = {
+					x: touch.clientX,
+					y: touch.clientY,
+					div: finger
+				}
+			}
+
+			sendTouch( 'start', Object.keys(activeTouches).length-1, touch.clientX, touch.clientY );
+		}
+	}
+
+	function onTouchMove( e ) {
+		var touchEvent = e.originalEvent;
+		for ( var i=0; i<touchEvent.changedTouches.length; i++ ) {
+			var touch = touchEvent.changedTouches[i];
+			if ( activeTouches[touch.identifier] != undefined ) {
+				var activeTouch = activeTouches[touch.identifier];
+				activeTouch.x = touch.clientX;
+				activeTouch.y = touch.clientY;
+				activeTouch.div.css({
+					top: touch.clientY - fingerHeight/2,
+					left: touch.clientX - fingerWidth/2
+				});
+			}
+
+
+		}
+	}
+
+	function onTouchEnd( e ) {
+		var touchEvent = e.originalEvent;
+		for ( var i=0; i<touchEvent.changedTouches.length; i++ ) {
+			var touch = touchEvent.changedTouches[i]
+			if ( activeTouches[touch.identifier] ) {
+				var activeTouch = activeTouches[touch.identifier];
+				activeTouch.div.fadeOut(200, function() {
+					$(this).remove();
+				});
+				var index = Object.keys(activeTouches).indexOf( touch.identifier.toString() );
+
+				sendTouch( 'end', index, touch.clientX, touch.clientY );
+				delete activeTouches[touch.identifier];
+			}
+		}
+	}
+
+
+	touchIntervalId = setInterval( sendTouches, touchInterval );
+
+	function sendTouches() {
+		var keys = Object.keys( activeTouches );
+		if ( keys.length == 0 )
+			return;
+
+		for ( var i=0; i<keys.length; i++ ) {
+			var touch = activeTouches[keys[i]];
+			sendTouch( 'move', i, touch.x, touch.y );
+		}
+	}
+
+	function sendTouch( phase, index, x, y ) {
+		if ( !isActive )
+			return;
+
+		sendSocketMessage(JSON.stringify({
+			type: 'touchCoord',
+			index: index,
+			phase: phase,
+			x: x,
+			y: y,
+			w: width,
+			h: height
 		}));
 	}
 
+	/*
 	function onTouchDown( event ) {
 		var isMobile = event.originalEvent instanceof TouchEvent;
 		if ( isMobile ) {
@@ -187,24 +288,6 @@ $(document).on( 'ready', function() {
 		sendTouch( 'end' );
 	}
 
-	function sendTouch( phase ) {
-		if ( isActive && ( isTouched || phase == "end" ) ) {
-
-
-			if ( phase == undefined )
-				phase = 'move';
-
-			sendSocketMessage( JSON.stringify({
-				type: 	'touchCoord',
-				phase:  phase,
-				x: 		touchX,
-				y: 		touchY,
-				w: 		width,
-				h: 		height,
-			}) );
-		}
-
-	}
 
 	function onTouchMove( event ) {
 		var isMobile = event.originalEvent instanceof TouchEvent;
@@ -223,5 +306,25 @@ $(document).on( 'ready', function() {
 		$('.finger').css('left', touchX - $('.finger').width()/2 + 'px' );
 		$('.finger').css('top', touchY - $('.finger').height()/2 + 'px' );
 	}
+	function sendTouch( phase, index ) {
+		if ( isActive && ( isTouched || phase == "end" ) ) {
+
+
+			if ( phase == undefined )
+				phase = 'move';
+
+			sendSocketMessage( JSON.stringify({
+				type: 	'touchCoord',
+				phase:  phase,
+				x: 		touchX,
+				y: 		touchY,
+				w: 		width,
+				h: 		height,
+			}) );
+		}
+	}
+	*/
+
+	
 
 });

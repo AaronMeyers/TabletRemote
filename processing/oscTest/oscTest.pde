@@ -53,10 +53,15 @@ void oscEvent(OscMessage theOscMessage) {
   }
   else if ( address.equals( "/touch3D" ) || address.equals( "/touch2D" ) ) {
     String phase = theOscMessage.get(0).stringValue();
-    float x = theOscMessage.get(1).floatValue();
-    float y = theOscMessage.get(2).floatValue();
-    float w = theOscMessage.get(3).floatValue();
-    float h = theOscMessage.get(4).floatValue();
+    int index = int(theOscMessage.get(1).floatValue());
+    if ( index != 0 )
+      return;
+    
+    
+    float x = theOscMessage.get(2).floatValue();
+    float y = theOscMessage.get(3).floatValue();
+    float w = theOscMessage.get(4).floatValue();
+    float h = theOscMessage.get(5).floatValue();
     if ( address.equals( "/touch3D" ) ) {
       touch3DX = ( x / w ) * width;
       touch3DY = ( y / h ) * height;    
@@ -67,9 +72,9 @@ void oscEvent(OscMessage theOscMessage) {
     }
     
     if ( phase.equals( "start" ) )
-      println( "touch started " + address );
+      println( "touch started " + address + " at index: " + index );
     else if ( phase.equals( "end" ) )
-      println( "touch ended " + address );
+      println( "touch ended " + address + " at index: " + index );
       
   } // end if touch3D/touch2D
 }

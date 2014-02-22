@@ -69,10 +69,10 @@ module.exports = function( params ) {
 			if ( json.type == 'touchCoord' ) {
 
 				if ( ws.remote3D ) {
-					sendOscTouch( '/touch3D', json.phase, json.x, json.y, json.w, json.h );
+					sendOscTouch( '/touch3D', json.phase, json.index, json.x, json.y, json.w, json.h );
 				}
 				if ( ws.remote2D ) {
-					sendOscTouch( '/touch2D', json.phase, json.x, json.y, json.w, json.h );
+					sendOscTouch( '/touch2D', json.phase, json.index, json.x, json.y, json.w, json.h );
 				}
 			}
 			else if ( json.type == 'setRemoteNum' ) {
@@ -283,11 +283,12 @@ module.exports = function( params ) {
 	    return num >= min && num <= max && input === num.toString();
 	}
 
-	function sendOscTouch( address, phase, x, y, w, h ) {
+	function sendOscTouch( address, phase, index, x, y, w, h ) {
 		var buf = osc.toBuffer({
 			address: address,
 			args: [
 				phase,
+				index,
 				x,
 				y,
 				w,
