@@ -1,4 +1,61 @@
-var menu;
+var menu = {
+	retracted: false,
+	transitioning: false,
+	itemWidth: 800,
+	itemHeight: 150,
+
+	close: function() {
+		$('.menu-item').css({
+			width: '170px',
+			'-webkit-transition': 'width .5s ease-in-out'
+		});
+		$('#menu-button').css({
+			background: 'white',
+			'-webkit-transition': 'background 1s'
+		});
+		$('#menu-button').on( 'webkitTransitionEnd', function(e) {
+			$(this).off( 'webkitTransitionEnd' );
+			menu.retracted = true;
+			menu.transitioning = false;
+		});
+		menu.transitioning = true;
+	},
+
+	open: function() {
+		$('.menu-item').css({
+			width: this.itemWidth+'px',
+			'-webkit-transition': 'width .5s ease-in-out'
+		});
+		$('#menu-button').css({
+			background: 'black',
+			'-webkit-transition': 'background .5s'
+		});
+		$('#menu-button').on( 'webkitTransitionEnd', function(e) {
+			$(this).off( 'webkitTransitionEnd' );
+			menu.retracted = false;
+			menu.transitioning = false;
+		});
+		menu.transitioning = true;
+	},
+
+	hide: function() {
+		this.close();
+		$('#menu').css({
+			left: '-400px',
+			'-webkit-transition': 'left 1s ease-in-out'
+		});
+	},
+
+	show: function( open ) {
+		if ( open )
+			this.open();
+		$('#menu').css({
+			left: '-100px',
+			'-webkit-transition': 'left .5s ease-in-out'
+		});
+	}
+
+};
 
 $(document).on( 'ready', function() {
 
@@ -6,8 +63,6 @@ $(document).on( 'ready', function() {
 		e.preventDefault();
 	});
 
-	var itemWidth = 800,
-		itemHeight = 150;
 	var numItems = 10 * 2;
 	var menuItems = [];
 
@@ -21,8 +76,6 @@ $(document).on( 'ready', function() {
 	var trackVelocity = 0.0;
 	var maxTrackVelocity = 1.0;
 	var trackFrameRate = 1000 / 60;
-	var menuRetracted = false;
-	var menuTransitioning = false;
 
 	initMenu();
 	scrollMenu();
@@ -94,9 +147,9 @@ $(document).on( 'ready', function() {
 			var rotation = ( i / numItems ) * 360 + trackRotationOffset;
 			item.css({
 				visibility: 'visible',
-				width: itemWidth,
-				height: itemHeight,
-				top: -itemHeight/2,
+				width: menu.itemWidth,
+				height: menu.itemHeight,
+				top: -menu.itemHeight/2,
 				// 'z-index': rotation
 				// '-webkit-transform': 'rotateZ( ' + rotation + 'deg )'
 			});
@@ -106,38 +159,13 @@ $(document).on( 'ready', function() {
 		}
 
 		$('#menu-button').on( 'touchstart', function(e) {
-			if ( menuTransitioning )
+			if ( menu.transitioning )
 				return;
 
-			if ( menuRetracted ) {
-				$('.menu-item').css({
-					width: itemWidth+'px',
-					'-webkit-transition': 'width .5s ease-in-out'
-				});
-				$('#menu-button').css({
-					background: 'black',
-					'-webkit-transition': 'background .5s'
-				});
-				$('#menu-button').on( 'webkitTransitionEnd', function(e) {
-					menuRetracted = false;
-					menuTransitioning = false;
-				});
-			}
-			else {
-				$('.menu-item').css({
-					width: '170px',
-					'-webkit-transition': 'width .5s ease-in-out'
-				});
-				$('#menu-button').css({
-					background: 'white',
-					'-webkit-transition': 'background 1s'
-				});
-				$('#menu-button').on( 'webkitTransitionEnd', function(e) {
-					menuRetracted = true;
-					menuTransitioning = false;
-				});
-			}
-			menuTransitioning = true;
+			if ( menu.retracted )
+				menu.open();
+			else
+				menu.close();
 		});
 
 		$('.menu-item').on( 'touchstart', function(e) {
