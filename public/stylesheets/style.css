@@ -1,6 +1,6 @@
 body {
-  
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  overflow: hidden;
+  font: 14px Helvetica, Arial, sans-serif;
 }
 
 a {
@@ -15,6 +15,53 @@ a {
 #settingsPanel {
 	position: absolute;
 	z-index: 10;
+}
+
+#menu-bg {
+	position: absolute;
+	background: black;
+	width: 1024px;
+	height: 768px;
+}
+
+#menu-overlay {
+	position: absolute;
+	background: rgba( 255, 0, 0, .25 );
+	width: 1024px;
+	height: 768px;
+	z-index: 10000;
+}
+
+#menu {
+	position: absolute;
+	left: -100px;
+	-webkit-transform-style: preserve-3d;
+}
+
+#menu-button {
+	width: 400px;
+	height: 400px;
+	background: black;
+	border-radius: 200px;
+	border: 3px solid white;
+	left: -200px;
+	top: -200px;
+	-webkit-transform: translate3d( 0px, 0px, 1000px );
+	position: absolute;
+}
+
+.menu-item {
+	color: white;
+	font-size: 120px;
+	padding-right: 10px;
+	text-align: right;
+	position: absolute;
+	border-radius: 30px;
+	background: black;
+	border: 3px solid white;
+	z-index: 0;
+	-webkit-transform: rotate( 0deg );
+	-webkit-transform-origin: 0% 50%;
 }
 
 .finger {
