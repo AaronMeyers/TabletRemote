@@ -5,6 +5,7 @@ function Menu() {
 	this.itemWidth = 800;
 	this.itemHeight = 150;
 	this.items = [];
+	this.dynamicWidth = true;
 
 	this.trackTime;
 	this.trackIdentifier;
@@ -21,15 +22,15 @@ Menu.prototype.init = function( items ) {
 		var item = clone.find('.menu-item');
 		var itemNum = (i%10+1);
 
-		item.html( itemNum.toString() );
+		item.find('.menu-item-title').html( items[i].name );
+		item.find('img').attr( 'src', 'images/effect-thumbs/' + items[i].img );
+
 		var rotation = ( i / items.length ) * 360 + this.trackRotationOffset;
 		item.css({
 			visibility: 'visible',
 			width: this.itemWidth,
 			height: this.itemHeight,
 			top: -this.itemHeight/2,
-			// 'z-index': rotation
-			// '-webkit-transform': 'rotateZ( ' + rotation + 'deg )'
 		});
 		item.attr( 'item-num', itemNum );
 		$('#menu').append( clone );
@@ -37,6 +38,10 @@ Menu.prototype.init = function( items ) {
 	}
 	// keep menu in scope
 	var menu = this;
+
+	$('.menu-item img').height( this.itemHeight - 30 ).css({
+		'margin-top': '-14px'
+	});
 
 	$('#menu-button').on( 'touchstart', function(e) {
 		if ( menu.transitioning )
@@ -98,9 +103,11 @@ Menu.prototype.startTracking = function( touchEvent ) {
 }
 
 Menu.prototype.scroll = function() {
-	// if ( trackVelocity == 0 )
-	// 	return;
-	// console.log( 'scrollMenu' );
+
+	if ( this.retracted || this.transitioning ) {
+		requestAnimationFrame(this.scroll.bind(this));
+		return;
+	}
 
 	this.trackRotationOffset += menu.trackVelocity;
 	this.trackVelocity *= .75;
@@ -109,9 +116,31 @@ Menu.prototype.scroll = function() {
 		var item = this.items[i];
 		var parent = item.parent();
 		var rotation = ( ( i / this.items.length ) * 360 + this.trackRotationOffset ) % 360;
+		if ( rotation > 180 )
+			rotation = rotation - 360;
+
+		if ( Math.abs(rotation) > 90 && item.is(':visible') ) {
+			item.hide();
+			continue;
+		}
+		else if ( Math.abs(rotation) < 90 && !item.is(':visible') ) {
+			item.show();
+			continue;
+		}
+
 		var z = (rotation+90) % 360;
+
+		var theWidth = this.getItemWidthForRotation( rotation );
+
+		var extend = this.getXPosForRotation( rotation );
+		// item.find( '.menu-item-debug' ).html( 'rotation: ' + rotation.toFixed(1) + '<br/>width: ' + theWidth.toFixed(1) );
+		var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
+		// if ( i==0 )
+		// 	console.log( this.transitioning + ' ' + transform );
+
 		item.css({
-			'-webkit-transform': 'rotate( ' + rotation + 'deg ) translate3d( 0px, 0px, ' + z + 'px )',
+			'-webkit-transform': transform,
+			// width: (this.dynamicWidth&&!this.transitioning)?theWidth:undefined,
 		});
 		item.attr( 'rotation', rotation );
 	}
@@ -119,25 +148,42 @@ Menu.prototype.scroll = function() {
 	requestAnimationFrame(this.scroll.bind(this));
 }
 
-Menu.prototype.loop = function() {
-	// console.log( 'loop: ' + this );
+Menu.prototype.getXPosForRotation = function( rotation ) {
+	return this.dynamicWidth?utils.cmap( Math.abs( rotation ), 90, 0, -500, 0 ):0;
+}
 
-	requestAnimationFrame(this.loop.bind(this));
+Menu.prototype.getItemWidthForRotation = function( rotation ) {
+	return this.dynamicWidth?utils.cmap( Math.abs( rotation ), 90, 0, 300, this.itemWidth ):this.itemWidth;
 }
 
 Menu.prototype.open = function() {
 	var menu = this;
+	for ( var i=0; i<this.items.length; i++ ) {
+		var item = this.items[i];
+		if ( !item.is(':visible') )
+			continue;
+		var rotation = item.attr('rotation');
+		var delay = utils.cmap( Math.abs( rotation ), 0, 90, 0, 300 );
+		var z = (rotation+90) % 360;
+		var extend = this.getXPosForRotation( rotation );
+		var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
 
-	$('.menu-item').css({
-		width: this.itemWidth+'px',
-		'-webkit-transition': 'width .5s ease-in-out'
-	});
+		var transition = '-webkit-transform .3s ease-in-out ' + delay + 'ms';
+		// var transition = 'width .3s ease-in-out ' + delay + 'ms';
+		item.css({
+			// width: this.getItemWidthForRotation( item.attr('rotation') ),
+			'-webkit-transform': transform,
+			'-webkit-transition': transition
+		});
+	}
+
 	$('#menu-button').css({
 		background: 'black',
 		'-webkit-transition': 'background .5s'
 	});
 	$('#menu-button').on( 'webkitTransitionEnd', function(e) {
 		$(this).off( 'webkitTransitionEnd' );
+		$('.menu-item').css( '-webkit-transition', '' );
 		menu.retracted = false;
 		menu.transitioning = false;
 	});
@@ -147,16 +193,29 @@ Menu.prototype.open = function() {
 Menu.prototype.close = function() {
 	var menu = this;
 
-	$('.menu-item').css({
-		width: '170px',
-		'-webkit-transition': 'width .5s ease-in-out'
-	});
+	for ( var i=0; i<this.items.length; i++ ) {
+		var item = this.items[i];
+		if ( !item.is(':visible') )
+			continue;
+		var rotation = item.attr('rotation');
+		var delay = utils.cmap( Math.abs( rotation ), 90, 0, 0, 300 );
+		var z = (rotation+90) % 360;
+		var transform = 'rotate( ' + rotation + 'deg ) translate3d( -800px, 0px, ' + z + 'px )';
+		var transition = '-webkit-transform .3s ease-in-out ' + delay + 'ms';
+		// var transition = 'width .3s ease-in-out ' + delay + 'ms';
+		item.css({
+			'-webkit-transform': transform,
+			// width: 170,
+			'-webkit-transition': transition
+		});
+	}
 	$('#menu-button').css({
 		background: 'white',
 		'-webkit-transition': 'background 1s'
 	});
 	$('#menu-button').on( 'webkitTransitionEnd', function(e) {
 		$(this).off( 'webkitTransitionEnd' );
+		$('.menu-item').css( '-webkit-transition', '' );
 		menu.retracted = true;
 		menu.transitioning = false;
 	});
@@ -191,6 +250,42 @@ $(document).on( 'ready', function() {
 	$('#menu').css( '-webkit-transform', 'translateY( ' + window.innerHeight / 2 + 'px )' );
 
 	// initMenu();
-	menu.init([1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10]);
+
+	var effectInfo = [
+		{
+			name: 'effect 1',
+			img: '01.gif'
+		},
+		{
+			name: 'effect 2',
+			img: '02.gif'
+		},
+		{
+			name: 'effect 3',
+			img: '03.gif'
+		},
+		{
+			name: 'effect 4',
+			img: '04.gif'
+		},
+		{
+			name: 'effect 5',
+			img: '05.gif'
+		},
+		{
+			name: 'effect 6',
+			img: '06.gif'
+		},
+		{
+			name: 'effect 7',
+			img: '07.gif'
+		},
+	];
+
+	effectInfo = effectInfo.concat( effectInfo, effectInfo );
+	console.log( 'effectInfo length: ' + effectInfo.length );
+	// effectInfo = effectInfo.concat( effectInfo );
+	// menu.init([1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10]);
+	menu.init( effectInfo );
 	// scrollMenu();
 });

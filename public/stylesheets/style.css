@@ -50,6 +50,33 @@ a {
 	position: absolute;
 }
 
+.menu-item img {
+	border: 3px solid white;
+	border-radius: 30px;
+	position: absolute;
+	right: 10px;
+	top: 23px;
+	width: 126px;
+	height: 126px;
+}
+
+.menu-item-title {
+	font-size: 40px;
+	vertical-align: middle;
+	text-transform: uppercase;
+	position: absolute;
+	right: 140px;
+	top: 10px;
+}
+
+.menu-item-debug {
+	font-size: 16px;
+	position: absolute;
+	bottom: 10px;
+	right: 140px;
+
+}
+
 .menu-item {
 	color: white;
 	font-size: 120px;
@@ -62,6 +89,7 @@ a {
 	z-index: 0;
 	-webkit-transform: rotate( 0deg );
 	-webkit-transform-origin: 0% 50%;
+	overflow: hidden;
 }
 
 .finger {
