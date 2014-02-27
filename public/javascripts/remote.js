@@ -34,7 +34,7 @@ $(document).on( 'ready', function() {
 		var fingerctx = fingerCanvas.getContext( "2d" );
 		var ctx = canvas.getContext( "2d" );
 
-		fingerctx.fillStyle = "rgba(0,0,0,.05)";
+		fingerctx.fillStyle = "rgba(0,0,0,.025)";
 		fingerctx.fillRect( 0, 0, width, height );
 
 		// ctx.clearRect( 0, 0, width, height );
@@ -54,7 +54,7 @@ $(document).on( 'ready', function() {
 			particleSystem.spawnParticles( 5, touch.x, touch.y );
 			fingerctx.drawImage( fingerImg, touch.x - size/2, touch.y - size/2, size, size );
 		}
-		ctx.globalCompositeOperation = 'overlay';
+		ctx.globalCompositeOperation = 'soft-light';
 		ctx.drawImage( fingerCanvas, 0, 0, width, height );
 		ctx.globalCompositeOperation = 'source-over';
 		particleSystem.update( ctx );
