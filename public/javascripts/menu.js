@@ -25,7 +25,11 @@ Menu.prototype.init = function( items ) {
 		item.find('.menu-item-title').html( items[i].name );
 		item.find('img').attr( 'src', 'images/effect-thumbs/' + items[i].img );
 
-		var rotation = ( i / items.length ) * 360 + this.trackRotationOffset;
+		// var rotation = ( i / items.length ) * 360 + this.trackRotationOffset;
+		var rotation = ( ( i / items.length ) * 360 + this.trackRotationOffset ) % 360;
+		if ( rotation > 180 )
+			rotation = rotation - 360;
+
 		item.css({
 			visibility: 'visible',
 			width: this.itemWidth,
@@ -33,6 +37,7 @@ Menu.prototype.init = function( items ) {
 			top: -this.itemHeight/2,
 		});
 		item.attr( 'item-num', itemNum );
+		item.attr( 'rotation', rotation );
 		$('#menu').append( clone );
 		this.items.push( item );
 	}
@@ -68,6 +73,7 @@ Menu.prototype.init = function( items ) {
 	});
 
 	this.scroll();
+	this.close( true );
 }
 
 Menu.prototype.startTracking = function( touchEvent ) {
@@ -190,8 +196,12 @@ Menu.prototype.open = function() {
 	menu.transitioning = true;
 }
 
-Menu.prototype.close = function() {
+Menu.prototype.close = function( immediate ) {
 	var menu = this;
+
+	if ( immediate == undefined ) {
+		immediate = false;
+	}
 
 	for ( var i=0; i<this.items.length; i++ ) {
 		var item = this.items[i];
@@ -206,7 +216,7 @@ Menu.prototype.close = function() {
 		item.css({
 			'-webkit-transform': transform,
 			// width: 170,
-			'-webkit-transition': transition
+			'-webkit-transition': (immediate?undefined:transition)
 		});
 	}
 	$('#menu-button').css({

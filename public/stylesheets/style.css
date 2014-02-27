@@ -1,6 +1,7 @@
 body {
   overflow: hidden;
   font: 14px Helvetica, Arial, sans-serif;
+  background: black;
 }
 
 a {
@@ -12,6 +13,28 @@ a {
 	-webkit-user-select:none;
 }
 
+canvas {
+	position: absolute;
+}
+
+#cave {
+	position: absolute;
+	pointer-events: none;
+	z-index: -1000;
+	visibility: hidden;
+}
+
+#fingercanvas {
+	visibility: hidden;
+}
+
+#cave img {
+	width: 1024px;
+	position: relative;
+	bottom: -297px;
+	-webkit-filter: brightness(50%); 
+}
+
 #settingsPanel {
 	position: absolute;
 	z-index: 10;
@@ -19,7 +42,7 @@ a {
 
 #menu-bg {
 	position: absolute;
-	background: black;
+	/*background: black;*/
 	width: 1024px;
 	height: 768px;
 }
@@ -75,6 +98,36 @@ a {
 	bottom: 10px;
 	right: 140px;
 
+}
+
+#countdown {
+	color: white;
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	text-align: right;
+	font-size: 40px;
+	font-weight: bold;
+	padding-right: 20px;
+	width: 400px;
+}
+
+.blink {
+	-webkit-animation: blink 1s step-end infinite;
+	/*-webkit-animation-play-state: paused;*/
+}
+
+@-webkit-keyframes blink {
+	0% {visibility: visible;}
+	50% {visibility: hidden;}
+}
+
+.countdownTimer {
+	font-size: 200px;
+	font-weight: bold;
+	line-height: 170px;
+	/*position: absolute;
+	right: 0px;*/
 }
 
 .menu-item {
@@ -136,7 +189,6 @@ a {
 .iphone {
 	width: 568px;
 	height: 320px;
-	background: black;
 	position: absolute;
 	z-index: -1;
 }

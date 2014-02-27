@@ -14,6 +14,7 @@ module.exports = function( params ) {
 	var sockets = {};
 	var socketCounter = 0;
 	var remotes = new Array( 4 );
+	var countdownLength = 60;
 	stuff.remotes = remotes;
 
 	var oscAddress = '127.0.0.1';
@@ -169,6 +170,14 @@ module.exports = function( params ) {
 				if ( remotes[json.num-1] != undefined ) {
 					remotes[json.num-1].send(JSON.stringify({
 						type: 'showSettings'
+					}));
+				}
+			}
+			else if ( json.type == 'startCountdown' ) {
+				if ( remotes[json.num-1] != undefined ) {
+					remotes[json.num-1].send(JSON.stringify({
+						type: 'startCountdown',
+						length: countdownLength
 					}));
 				}
 			}

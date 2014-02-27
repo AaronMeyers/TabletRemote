@@ -199,6 +199,9 @@
 				LastUpgradeCheck = 0500;
 				ORGANIZATIONNAME = "Aaron Meyers";
 				TargetAttributes = {
+					930575C018BAB8EE00FE36F8 = {
+						DevelopmentTeam = 2DJ86C7E3W;
+					};
 					930575E118BAB8EE00FE36F8 = {
 						TestTargetID = 930575C018BAB8EE00FE36F8;
 					};
@@ -380,10 +383,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TabletRemote/TabletRemote-Prefix.pch";
 				INFOPLIST_FILE = "TabletRemote/TabletRemote-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -393,10 +399,13 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "TabletRemote/TabletRemote-Prefix.pch";
 				INFOPLIST_FILE = "TabletRemote/TabletRemote-Info.plist";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
@@ -462,6 +471,7 @@
 				930575F518BAB8EE00FE36F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		930575F618BAB8EE00FE36F8 /* Build configuration list for PBXNativeTarget "TabletRemoteTests" */ = {
 			isa = XCConfigurationList;
@@ -470,6 +480,7 @@
 				930575F818BAB8EE00FE36F8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

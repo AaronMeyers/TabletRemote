@@ -1,4 +1,5 @@
 var socket;
+var countdown;
 
 $(document).on( 'ready', function() {
 
@@ -12,10 +13,13 @@ $(document).on( 'ready', function() {
 	var fingerWidth = $('#clonablefinger').width();
 	var fingerHeight = $('#clonablefinger').height();
 	var canvas = $('#canvas')[0];
+	var fingerCanvas = $('#fingercanvas')[0];
 	var framerate = 1000/60;
 	var fingerImg = $('#clonablefinger').find('img')[0];
+	var caveImg = $('#cave').find('img')[0];
 
-	var mobileClient =  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+	countdown = new Countdown();
+	particleSystem = new ParticleSystem( canvas.getContext( '2d' ), 300 );
 
 	var width, height;
 
@@ -27,20 +31,34 @@ $(document).on( 'ready', function() {
 	});
 
 	function loop() {
+		var fingerctx = fingerCanvas.getContext( "2d" );
 		var ctx = canvas.getContext( "2d" );
-		ctx.fillStyle = "rgba(0,0,0,.05)";
+
+		fingerctx.fillStyle = "rgba(0,0,0,.05)";
+		fingerctx.fillRect( 0, 0, width, height );
+
+		// ctx.clearRect( 0, 0, width, height );
+		ctx.fillStyle = 'black';
 		ctx.fillRect( 0, 0, width, height );
+
+		ctx.globalCompositeOperation = 'source-over';
+		ctx.drawImage( caveImg, 0, 120, caveImg.width, caveImg.height );
+
+		// switch to multiply blending
+
 		var size = 64;
+		size = 200;
 		var keys = Object.keys( activeTouches );
 		for ( var i=0; i<keys.length; i++ ) {
 			var touch = activeTouches[keys[i]];
-			ctx.drawImage( fingerImg, touch.x - size/2, touch.y - size/2, size, size );
+			particleSystem.spawnParticles( 5, touch.x, touch.y );
+			fingerctx.drawImage( fingerImg, touch.x - size/2, touch.y - size/2, size, size );
 		}
-
-		if ( requestAnimationFrame )
-			requestAnimationFrame( loop, framerate );			
-		else
-			setTimeout( loop, framerate );
+		ctx.globalCompositeOperation = 'overlay';
+		ctx.drawImage( fingerCanvas, 0, 0, width, height );
+		ctx.globalCompositeOperation = 'source-over';
+		particleSystem.update( ctx );
+		requestAnimationFrame( loop );
 	}
 	loop();
 
@@ -74,7 +92,8 @@ $(document).on( 'ready', function() {
 
 			}
 			else if ( json.type == 'registerRemoteControl' ) {
-				$('#settingsPanel').fadeIn();
+
+				// $('#settingsPanel').fadeIn();
 			}
 			else if ( json.type == 'showSettings' ) {
 				if ( $('#settingsPanel').is(':visible') )
@@ -93,6 +112,10 @@ $(document).on( 'ready', function() {
 				}
 				touchInterval = json.touchInterval;
 				$('#activityStatus').text( (isActive?'ACTIVE/':'INACTIVE/') + remoteNum ).addClass( isActive?'btn-success':'btn-danger').removeClass( isActive?'btn-danger':'btn-success' );
+			}
+			else if ( json.type == 'startCountdown' ) {
+				// console.log( 'start countdown with length: ' + json.length );
+				countdown.begin( json.length );
 			}
 
 			$(window).on( 'resize', onResize );
@@ -131,6 +154,9 @@ $(document).on( 'ready', function() {
 		});
 		canvas.width = width;
 		canvas.height = height;
+
+		fingerCanvas.width = width;
+		fingerCanvas.height = height;
 	}
 
 	function sendSocketMessage( jsonString ) {
@@ -145,23 +171,14 @@ $(document).on( 'ready', function() {
 	function onTouchStart( e ) {
 		var touchEvent = e.originalEvent;
 		for ( var i=0; i<touchEvent.changedTouches.length; i++ ) {
-			var touch = touchEvent.changedTouches[i];
 
-			var finger = $('#clonablefinger')
-				.clone()
-				.attr( 'id', 'finger' + touch.identifier )
-				.css({
-					top: touch.clientY - fingerHeight/2,
-					left: touch.clientX - fingerWidth/2,
-					display: 'block'
-				});
-			$('.iphone').append( finger );
+
+			var touch = touchEvent.changedTouches[i];
 
 			if ( activeTouches[touch.identifier] == undefined ) {
 				activeTouches[touch.identifier] = {
 					x: touch.clientX,
 					y: touch.clientY,
-					div: finger
 				}
 			}
 
@@ -177,10 +194,6 @@ $(document).on( 'ready', function() {
 				var activeTouch = activeTouches[touch.identifier];
 				activeTouch.x = touch.clientX;
 				activeTouch.y = touch.clientY;
-				activeTouch.div.css({
-					top: touch.clientY - fingerHeight/2,
-					left: touch.clientX - fingerWidth/2
-				});
 			}
 
 
@@ -193,9 +206,6 @@ $(document).on( 'ready', function() {
 			var touch = touchEvent.changedTouches[i]
 			if ( activeTouches[touch.identifier] ) {
 				var activeTouch = activeTouches[touch.identifier];
-				activeTouch.div.fadeOut(200, function() {
-					$(this).remove();
-				});
 				var index = Object.keys(activeTouches).indexOf( touch.identifier.toString() );
 
 				sendTouch( 'end', index, touch.clientX, touch.clientY );

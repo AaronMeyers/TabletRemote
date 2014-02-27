@@ -20,7 +20,7 @@ $(document).on( 'ready', function() {
 			for ( var i=0; i<4; i++ )
 				fakeRemotes.push( {connected:false} );
 			updateRemoteInfo(fakeRemotes);
-			
+
 			setTimeout( initWebSocket, 1000 );
 		}
 		socket.onmessage = function( message ) {
@@ -105,6 +105,13 @@ $(document).on( 'ready', function() {
 			type:'showSettings',
 			num: $(this).attr('remote')
 		}));
+	});
+
+	$('.startCountdownButton').click(function() {
+		sendSocketMessage(JSON.stringify({
+			type:'startCountdown',
+			num: $(this).attr('remote')
+		}))
 	});
 
 	// disable form submit behavior

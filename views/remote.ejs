@@ -1,8 +1,24 @@
 <% layout('layout') -%>
 
+<script src="javascripts/utils.js"></script>
+<script src="javascripts/countdown.js"></script>
 <script src="javascripts/remote.js"></script>
+<script src="javascripts/particles.js"></script>
 
+<div id="cave">
+  <img src="/images/wirecave.png">
+</div>
 
+<div id="test">
+
+</div>
+
+<div id="countdown">
+  TAKE CONTROL IN
+  <div class="countdownTimer">
+    <span class="countdownColon">:</span><span class="countdownSeconds">60</span>
+  </div>
+</div>
 
 <div class="iphone">
 
@@ -11,6 +27,7 @@
   </div>
 
   <canvas id="canvas"></canvas>
+  <canvas id="fingercanvas"></canvas>
   
 </div>
 
