@@ -128,10 +128,14 @@ $(document).on( 'ready', function() {
 			console.log( 'remote set to ' + remoteNum );
 			if ( remoteNum == 1 || remoteNum == 2 ) {
 				// menu.show();
+				menu.kill();
+				menu = new Menu();
 				menu.init( effectInfo3D.concat( effectInfo3D ) );
 				menu.hide(true);
 			}
 			else if ( remoteNum == 3 || remoteNum == 4 ) {
+				menu.kill();
+				menu = new Menu();
 				menu.init( effectInfo2D.concat( effectInfo2D ) );
 				menu.hide(true);
 			}

@@ -52,6 +52,12 @@ $(document).on( 'ready', function() {
 			heartbeat: $(this).prop('checked')
 		}));
 	});
+	$('#autoSequenceToggle').change(function(){
+		sendSocketMessage(JSON.stringify({
+			type: 'setAutoSequence',
+			autoSequence: $(this).prop('checked')
+		}));
+	});
 
 	$('.reloadButton').click(function() {
 		sendSocketMessage(JSON.stringify({
@@ -118,6 +124,7 @@ $(document).on( 'ready', function() {
 			$('#controlPanel').fadeIn();
 			$('#touchIntervalInput').val( json.touchInterval );
 			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+			$('#autoSequenceToggle').prop( 'checked', json.autoSequence?'checked':'' );
 		}
 		else if ( json.type == 'remoteInfo' ) {
 			updateRemoteInfo( json.remotes );
@@ -135,6 +142,9 @@ $(document).on( 'ready', function() {
 		}
 		else if ( json.type == 'setHeartbeat' ) {
 			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+		}
+		else if ( json.type == 'setAutoSequence' ) {
+			$('#autoSequenceToggle').prop( 'checked', json.autoSequence?'checked':'' );
 		}
 	}
 

@@ -2,5 +2,6 @@
     "oscAddress": "127.0.0.1",
     "oscPort": "12000",
     "heartbeat": false,
-    "touchInterval": "20"
+    "touchInterval": "20",
+    "autoSequence": true
 }

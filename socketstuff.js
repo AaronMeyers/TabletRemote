@@ -18,6 +18,7 @@ module.exports = function( params ) {
 	var remotes = new Array( 4 );
 	var turnLength = 15;
 	var turnTicks = 0;
+	var autoSequence = true;
 	var turnTickIntervalId;
 	stuff.remotes = remotes;
 
@@ -41,6 +42,7 @@ module.exports = function( params ) {
 				oscPort = settings.oscPort;
 				heartbeat = settings.heartbeat;
 				touchInterval = settings.touchInterval;
+				autoSequence = settings.autoSequence;
 			}
 		});
 	}
@@ -50,7 +52,8 @@ module.exports = function( params ) {
 			oscAddress: oscAddress,
 			oscPort: oscPort,
 			heartbeat: heartbeat,
-			touchInterval: touchInterval
+			touchInterval: touchInterval,
+			autoSequence: autoSequence
 		}, null, 4);
 		fs.writeFile( 'settings.json', settings, function(err) {
 			if ( err )
@@ -132,13 +135,18 @@ module.exports = function( params ) {
 				json.oscPort = oscPort;
 				json.heartbeat = heartbeat;
 				json.touchInterval = touchInterval;
+				json.autoSequence = autoSequence;
 				ws.serverControl = true;
 				ws.send( JSON.stringify(json) );
 				sendRemoteStatuses();
 			}
 			else if ( json.type == 'setHeartbeat' ) {
 				heartbeat = json.heartbeat;
-				console.log( 'heartbeat: ' + heartbeat );
+				saveSettings();
+				ws.send( message );
+			}
+			else if ( json.type == 'setAutoSequence' ) {
+				autoSequence = json.autoSequence;
 				saveSettings();
 				ws.send( message );
 			}
@@ -225,10 +233,12 @@ module.exports = function( params ) {
 		turnTicks++;
 		console.log( 'countdown tick: ' + turnTicks + '/' + turnLength );
 		if ( turnTicks >= turnLength ) {
-			console.log( 'time to switch!' );
-			var newRemote3DIndex = activeRemote3DIndex==0?1:0;
-			var newRemote2DIndex = activeRemote2DIndex==3?2:3;
-			activateRemotes( newRemote3DIndex, newRemote2DIndex );
+			if ( autoSequence ) {
+				console.log( 'time to switch!' );
+				var newRemote3DIndex = activeRemote3DIndex==0?1:0;
+				var newRemote2DIndex = activeRemote2DIndex==3?2:3;
+				activateRemotes( newRemote3DIndex, newRemote2DIndex );
+			}
 		}
 		else {
 			turnTickIntervalId = setTimeout( countdownTick, 1000 );
