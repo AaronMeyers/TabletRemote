@@ -86,12 +86,15 @@ var effectInfo3D = [
 
 var menuInstance = 0;
 
-function Menu() {
+function Menu( itemWidth, itemHeight ) {
+	itemWidth = (typeof itemWidth === "undefined") ? 800 : itemWidth
+	itemHeight = (typeof itemHeight === "undefined") ? 150 : itemHeight
+
 	this.name = "menu" + menuInstance++;
 	this.retracted = false;
 	this.transitioning = false;
-	this.itemWidth = 800;
-	this.itemHeight = 150;
+	this.itemWidth = itemWidth;
+	this.itemHeight = itemHeight;
 	this.items = [];
 	this.dynamicWidth = true;
 
@@ -167,8 +170,10 @@ Menu.prototype.init = function( items ) {
 	});
 
 	$('#menu-button').on( 'touchstart', function(e) {
-		if ( menu.transitioning )
+		if ( menu.transitioning ) {
+			console.log( 'button touch ignored -- transitioning' );
 			return;
+		}
 
 		if ( menu.retracted )
 			menu.open();
@@ -315,12 +320,12 @@ Menu.prototype.open = function() {
 			'-webkit-transition': transition
 		});
 	}
-
 	$('#menu-button').css({
 		background: 'black',
 		'-webkit-transition': 'background .5s'
 	});
 	$('#menu-button').on( 'webkitTransitionEnd', function(e) {
+		console.log( 'open transition finished' );
 		$(this).off( 'webkitTransitionEnd' );
 		$('.menu-item').css( '-webkit-transition', '' );
 		menu.retracted = false;
@@ -357,6 +362,7 @@ Menu.prototype.close = function( immediate ) {
 		'-webkit-transition': 'background 1s'
 	});
 	$('#menu-button').on( 'webkitTransitionEnd', function(e) {
+		console.log( 'close transition finished' );
 		$(this).off( 'webkitTransitionEnd' );
 		$('.menu-item').css( '-webkit-transition', '' );
 		menu.retracted = true;

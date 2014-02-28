@@ -17,11 +17,30 @@ canvas {
 	position: absolute;
 }
 
+#welcome {
+	visibility: hidden;
+	position: absolute;
+	z-index: 100;
+	font-size: 75px;
+	margin: 50px 30px;
+	line-height: 70px;
+	font-weight: bolder;
+	color: white;
+}
+
 #cave {
 	position: absolute;
 	pointer-events: none;
 	z-index: -1000;
 	visibility: hidden;
+}
+
+.crystalCanvas {
+	position: absolute;
+}
+
+#canvas {
+	-webkit-filter: brightness(0%);
 }
 
 #fingercanvas {

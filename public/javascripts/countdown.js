@@ -47,6 +47,7 @@ Countdown.prototype.begin = function( startingCount ) {
 	}
 
 	$('.countdownSeconds').html( startingCount );
+	$('#welcome-seconds').html( startingCount + (startingCount==1?' second':' seconds') );
 
 
 	this.tickIntervalId = setInterval( this.tick.bind(this), 1000 );
@@ -64,6 +65,7 @@ Countdown.prototype.tick = function() {
 	var count = parseInt( $('.countdownSeconds').html() );
 	count--;
 
+	$('#welcome-seconds').html( count + (count==1?' second':' seconds') );
 	$('.countdownSeconds').html( (count<10?'0':'') +count );
 
 	if ( count == 0 ) {

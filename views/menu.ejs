@@ -1,6 +1,7 @@
 <% layout('layout') -%>
 
 <script src="javascripts/utils.js"></script>
+<script src="javascripts/crystalgen.js"></script>
 <script src="javascripts/menu.js"></script>
 <script type="text/javascript">
 
@@ -15,6 +16,8 @@
 		// menu.init( effectInfo3D.concat( effectInfo3D, effectInfo3D ) );
 
 		var menu = new Menu();
+		menu.init( effectInfo2D.concat( effectInfo2D ) );
+		// menu.open();
 
 
 		$(document).on( 'keydown', function(e) {
@@ -23,7 +26,7 @@
 			if ( key == '2' ) {
 				console.log( 'initializing 2D menu' );
 				menu.kill();
-				menu = new Menu();
+				menu = new Menu( 600, 200 );
 				menu.init( effectInfo2D.concat( effectInfo2D ) );
 			}
 			else if ( key == '3' ) {
