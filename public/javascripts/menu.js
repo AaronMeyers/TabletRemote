@@ -1,5 +1,93 @@
+var effectInfo2D = [
+	{
+		name: '2D effect 1',
+		img: '01.gif'
+	},
+	{
+		name: '2D effect 2',
+		img: '02.gif'
+	},
+	{
+		name: '2D effect 3',
+		img: '03.gif'
+	},
+	{
+		name: '2D effect 4',
+		img: '04.gif'
+	},
+	{
+		name: '2D effect 5',
+		img: '05.gif'
+	},
+	{
+		name: '2D effect 6',
+		img: '06.gif'
+	},
+	{
+		name: '2D effect 7',
+		img: '07.gif'
+	},
+	{
+		name: '2D effect 8',
+		img: '07.gif'
+	},
+	{
+		name: '2D effect 9',
+		img: '07.gif'
+	},
+	{
+		name: '2D effect 10',
+		img: '07.gif'
+	},
+];
+
+var effectInfo3D = [
+	{
+		name: '3D effect 1',
+		img: '01.gif'
+	},
+	{
+		name: '3D effect 2',
+		img: '02.gif'
+	},
+	{
+		name: '3D effect 3',
+		img: '03.gif'
+	},
+	{
+		name: '3D effect 4',
+		img: '04.gif'
+	},
+	{
+		name: '3D effect 5',
+		img: '05.gif'
+	},
+	{
+		name: '3D effect 6',
+		img: '06.gif'
+	},
+	{
+		name: '3D effect 7',
+		img: '07.gif'
+	},
+	{
+		name: '3D effect 8',
+		img: '07.gif'
+	},
+	{
+		name: '3D effect 9',
+		img: '07.gif'
+	},
+	{
+		name: '3D effect 10',
+		img: '07.gif'
+	},
+];
+
+var menuInstance = 0;
+
 function Menu() {
-	this.name = "menu";
+	this.name = "menu" + menuInstance++;
 	this.retracted = false;
 	this.transitioning = false;
 	this.itemWidth = 800;
@@ -13,9 +101,37 @@ function Menu() {
 	this.trackRotationOffset = 0;
 	this.trackVelocity = 0.0;
 	this.trackFrameRate = 1000 / 60;
+
+	this.initialized = false;
+	this.dead = false;
+
+	$('#menu').css( '-webkit-transform', 'translateY( ' + window.innerHeight / 2 + 'px )' );
+}
+
+Menu.prototype.kill = function() {
+	this.clear();
+	this.dead = true;
+}
+
+Menu.prototype.clear = function() {
+
+	while ( this.items.length > 0 ) {
+		var item = this.items[0];
+		item.remove();
+		this.items.splice(0,1);
+	}
+
+	$('#menu-bg').off( 'touchstart' );
+	$('#menu-button').off( 'touchstart' );
 }
 
 Menu.prototype.init = function( items ) {
+
+	if ( this.initialized ) {
+		console.log( 'clearing!' );
+		this.clear();
+	}
+
 	for ( var i=0; i<items.length; i++ ) {
 		var clone = $('#clonable-menu-item').clone();
 		clone.attr( 'id', 'item'+i );
@@ -23,7 +139,7 @@ Menu.prototype.init = function( items ) {
 		var itemNum = (i%10+1);
 
 		item.find('.menu-item-title').html( items[i].name );
-		item.find('img').attr( 'src', 'images/effect-thumbs/' + items[i].img );
+		// item.find('img').attr( 'src', 'images/effect-thumbs/' + items[i].img );
 
 		// var rotation = ( i / items.length ) * 360 + this.trackRotationOffset;
 		var rotation = ( ( i / items.length ) * 360 + this.trackRotationOffset ) % 360;
@@ -32,9 +148,11 @@ Menu.prototype.init = function( items ) {
 
 		item.css({
 			visibility: 'visible',
+			// visibility: 'hidden',
 			width: this.itemWidth,
 			height: this.itemHeight,
 			top: -this.itemHeight/2,
+			// '-webkit-transform'
 		});
 		item.attr( 'item-num', itemNum );
 		item.attr( 'rotation', rotation );
@@ -72,12 +190,19 @@ Menu.prototype.init = function( items ) {
 		menu.startTracking( e.originalEvent );
 	});
 
-	this.scroll();
-	this.close( true );
+	if ( !this.initialized ) {
+		this.scroll();
+		this.close( true );
+		this.initialized = true;
+	}
+	else {
+		this.trackRotationOffset = 0;
+	}
+
 }
 
 Menu.prototype.startTracking = function( touchEvent ) {
-	// console.log( 'startTracking: ' + this.name );
+	console.log( 'startTracking: ' + this.name );
 	var touch = touchEvent.changedTouches[0];
 	this.trackIdentifier = touch.identifier;
 	this.trackY = touch.clientY;
@@ -110,12 +235,17 @@ Menu.prototype.startTracking = function( touchEvent ) {
 
 Menu.prototype.scroll = function() {
 
+	if ( this.dead )
+		return;
+
+	// console.log( 'scroll' );
+
 	if ( this.retracted || this.transitioning ) {
 		requestAnimationFrame(this.scroll.bind(this));
 		return;
 	}
 
-	this.trackRotationOffset += menu.trackVelocity;
+	this.trackRotationOffset += this.trackVelocity;
 	this.trackVelocity *= .75;
 
 	for ( var i=0; i<this.items.length; i++ ) {
@@ -155,10 +285,12 @@ Menu.prototype.scroll = function() {
 }
 
 Menu.prototype.getXPosForRotation = function( rotation ) {
+
 	return this.dynamicWidth?utils.cmap( Math.abs( rotation ), 90, 0, -500, 0 ):0;
 }
 
 Menu.prototype.getItemWidthForRotation = function( rotation ) {
+
 	return this.dynamicWidth?utils.cmap( Math.abs( rotation ), 90, 0, 300, this.itemWidth ):this.itemWidth;
 }
 
@@ -177,6 +309,7 @@ Menu.prototype.open = function() {
 		var transition = '-webkit-transform .3s ease-in-out ' + delay + 'ms';
 		// var transition = 'width .3s ease-in-out ' + delay + 'ms';
 		item.css({
+			// visibility: 'visible',
 			// width: this.getItemWidthForRotation( item.attr('rotation') ),
 			'-webkit-transform': transform,
 			'-webkit-transition': transition
@@ -232,11 +365,14 @@ Menu.prototype.close = function( immediate ) {
 	menu.transitioning = true;
 }
 
-Menu.prototype.hide = function() {
+Menu.prototype.hide = function( immediate ) {
 	this.close();
 	$('#menu').css({
 		left: '-400px',
-		'-webkit-transition': 'left 1s ease-in-out'
+		'-webkit-transition': immediate?undefined:'left 1s ease-in-out'
+	});
+	$('#menu-bg').css({
+		'pointer-events': 'none'
 	});
 }
 
@@ -244,58 +380,11 @@ Menu.prototype.show = function( open ) {
 	if ( open )
 		this.open();
 	$('#menu').css({
+		visibility: 'visible',
 		left: '-100px',
 		'-webkit-transition': 'left .5s ease-in-out'
 	});
-}
-
-var menu = new Menu();
-
-$(document).on( 'ready', function() {
-
-	$(document).on( 'touchmove', function( e ) {
-		e.preventDefault();
+	$('#menu-bg').css({
+		'pointer-events': 'auto'
 	});
-
-	$('#menu').css( '-webkit-transform', 'translateY( ' + window.innerHeight / 2 + 'px )' );
-
-	// initMenu();
-
-	var effectInfo = [
-		{
-			name: 'effect 1',
-			img: '01.gif'
-		},
-		{
-			name: 'effect 2',
-			img: '02.gif'
-		},
-		{
-			name: 'effect 3',
-			img: '03.gif'
-		},
-		{
-			name: 'effect 4',
-			img: '04.gif'
-		},
-		{
-			name: 'effect 5',
-			img: '05.gif'
-		},
-		{
-			name: 'effect 6',
-			img: '06.gif'
-		},
-		{
-			name: 'effect 7',
-			img: '07.gif'
-		},
-	];
-
-	effectInfo = effectInfo.concat( effectInfo, effectInfo );
-	console.log( 'effectInfo length: ' + effectInfo.length );
-	// effectInfo = effectInfo.concat( effectInfo );
-	// menu.init([1,2,3,4,5,6,7,8,9,10,1,2,3,4,5,6,7,8,9,10]);
-	menu.init( effectInfo );
-	// scrollMenu();
-});
+}

@@ -23,33 +23,7 @@ $(document).on( 'ready', function() {
 
 			setTimeout( initWebSocket, 1000 );
 		}
-		socket.onmessage = function( message ) {
-			var json = JSON.parse( message.data );
-			if ( json.type == 'registerServerControl' ) {
-				var oscInfo = json.oscAddress + ':' + json.oscPort;
-				$('#oscAddressInput').val( oscInfo );
-				$('#controlPanel').fadeIn();
-				$('#touchIntervalInput').val( json.touchInterval );
-				$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
-			}
-			else if ( json.type == 'remoteInfo' ) {
-				updateRemoteInfo( json.remotes );
-			}
-			else if ( json.type == 'setOscInfo' ) {
-				console.log( 'osc info: ' + json.oscInfo );
-				$('#oscAddressInput').val( json.oscInfo );
-				$('#oscAddressInput').removeAttr( 'disabled' );
-				$('#oscAddressButton').removeAttr( 'disabled' );
-			}
-			else if ( json.type == 'setTouchInterval' ) {
-				$('#touchIntervalInput').val( json.touchInterval );
-				$('#touchIntervalInput').removeAttr( 'disabled' );
-				$('#touchIntervalButton').removeAttr( 'disabled' );
-			}
-			else if ( json.type == 'setHeartbeat' ) {
-				$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
-			}
-		}
+		socket.onmessage = onSocketMessage;
 	}
 	initWebSocket();
 
@@ -79,7 +53,23 @@ $(document).on( 'ready', function() {
 		}));
 	});
 
-	// $('.active3DToggle').change(function() {
+	$('.reloadButton').click(function() {
+		sendSocketMessage(JSON.stringify({
+			type: 'reloadRemotes'
+		}));
+	});
+
+	$('.activationButton').click(function(){
+		var remote3D = $(this).attr('remote3D');
+		var remote2D = $(this).attr('remote2D');
+
+		sendSocketMessage(JSON.stringify({
+			type: 'activateRemotes',
+			remote3D: remote3D,
+			remote2D: remote2D
+		}));
+	});
+
 	$('.active3DButton').click(function() {
 		if ( $(this).hasClass( 'btn-success' ) )
 			return;
@@ -119,6 +109,34 @@ $(document).on( 'ready', function() {
 		e.preventDefault();
 		return false;
 	});
+
+	function onSocketMessage( message ) {
+		var json = JSON.parse( message.data );
+		if ( json.type == 'registerServerControl' ) {
+			var oscInfo = json.oscAddress + ':' + json.oscPort;
+			$('#oscAddressInput').val( oscInfo );
+			$('#controlPanel').fadeIn();
+			$('#touchIntervalInput').val( json.touchInterval );
+			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+		}
+		else if ( json.type == 'remoteInfo' ) {
+			updateRemoteInfo( json.remotes );
+		}
+		else if ( json.type == 'setOscInfo' ) {
+			console.log( 'osc info: ' + json.oscInfo );
+			$('#oscAddressInput').val( json.oscInfo );
+			$('#oscAddressInput').removeAttr( 'disabled' );
+			$('#oscAddressButton').removeAttr( 'disabled' );
+		}
+		else if ( json.type == 'setTouchInterval' ) {
+			$('#touchIntervalInput').val( json.touchInterval );
+			$('#touchIntervalInput').removeAttr( 'disabled' );
+			$('#touchIntervalButton').removeAttr( 'disabled' );
+		}
+		else if ( json.type == 'setHeartbeat' ) {
+			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
+		}
+	}
 
 	function touchIntervalEntered() {
 		$('#touchIntervalInput').blur();

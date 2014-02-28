@@ -18,9 +18,25 @@ Countdown.prototype.init = function() {
 
 Countdown.prototype.slideIn = function() {
 	$('#countdown').css({
-		right: '0px',
+		visibility: 'visible',
+		right: 0,
 		'-webkit-transition': 'right 1s ease-in-out'
-	})
+	});
+	$('#countdown').on( 'webkitTransitionEnd', function(e){
+		$(this).off( 'webkitTransitionEnd' );
+		$(this).css({visibility:'visible'});
+	});
+}
+
+Countdown.prototype.slideOut = function() {
+	$('#countdown').css({
+		right: -this.width,
+		'-webkit-transition': 'right 1s ease-in-out'
+	});
+	$('#countdown').on( 'webkitTransitionEnd', function(e){
+		$(this).off( 'webkitTransitionEnd' );
+		$(this).css({visibility:'hidden'});
+	});
 }
 
 Countdown.prototype.begin = function( startingCount ) {

@@ -2,6 +2,42 @@
 
 <script src="javascripts/utils.js"></script>
 <script src="javascripts/menu.js"></script>
+<script type="text/javascript">
+
+
+	$(document).on( 'ready', function() {
+
+		$(document).on( 'touchmove', function( e ) {
+			e.preventDefault();
+		});
+
+		// menu.init( effectInfo2D.concat( effectInfo2D, effectInfo2D ) );
+		// menu.init( effectInfo3D.concat( effectInfo3D, effectInfo3D ) );
+
+		var menu = new Menu();
+
+
+		$(document).on( 'keydown', function(e) {
+			var key = String.fromCharCode( e.keyCode );
+			// console.log( key );
+			if ( key == '2' ) {
+				console.log( 'initializing 2D menu' );
+				menu.kill();
+				menu = new Menu();
+				menu.init( effectInfo2D.concat( effectInfo2D ) );
+			}
+			else if ( key == '3' ) {
+				console.log( 'initializing 3D menu' );
+				menu.kill();
+				menu = new Menu();
+				menu.init( effectInfo3D.concat( effectInfo3D ) );
+			}
+			else if ( key == 'C' ) {
+				menu.clear();
+			}
+		});
+	});
+</script>
 
 
 <div id="menu-bg">

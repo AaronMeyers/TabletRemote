@@ -4,7 +4,9 @@ module.exports = function( params ) {
 	// create websocket stuff
 	var fs = require('fs');
 
-	var WebSocketServer = require('ws').Server
+	var WebSocket = require('ws');
+	// var WebSocketServer = require('ws').Server
+	var WebSocketServer = WebSocket.Server
 	, wss = new WebSocketServer({port: 8080});
 	// create osc stuff
 	var osc = require('osc-min')
@@ -14,13 +16,18 @@ module.exports = function( params ) {
 	var sockets = {};
 	var socketCounter = 0;
 	var remotes = new Array( 4 );
-	var countdownLength = 60;
+	var turnLength = 15;
+	var turnTicks = 0;
+	var turnTickIntervalId;
 	stuff.remotes = remotes;
 
 	var oscAddress = '127.0.0.1';
 	var oscPort = '12000';
 	var touchInterval = 20;
 	var heartbeat = true;
+
+	var activeRemote3DIndex;
+	var activeRemote2DIndex;
 
 	loadSettings();
 
@@ -61,7 +68,8 @@ module.exports = function( params ) {
 		ws.remote2D = false;
 		sockets[id] = ws;
 		// console.log( 'connection opened to ' + ws.id + ' at ' + ws.url );
-		// console.log( ws );
+		console.log( 'made a connection' );
+		console.log( 'web socket connected at ' + ws._socket.remoteAddress );
 
 		ws.on('message', function(message) {
 			// HANDLE INCOMING MESSAGES
@@ -177,9 +185,27 @@ module.exports = function( params ) {
 				if ( remotes[json.num-1] != undefined ) {
 					remotes[json.num-1].send(JSON.stringify({
 						type: 'startCountdown',
-						length: countdownLength
+						length: turnLength
 					}));
 				}
+			}
+			else if ( json.type == 'activateRemotes' ) {
+				var remote3DIndex = json.remote3D - 1;
+				var remote2DIndex = json.remote2D - 1;
+
+				activateRemotes( remote3DIndex, remote2DIndex );
+			}
+			else if ( json.type == 'reloadRemotes' ) {
+
+				clearTimeout( turnTickIntervalId );
+
+				remotes.forEach(function(r){
+					if ( r.readyState != WebSocket.OPEN )
+						return;
+					r.send(JSON.stringify({
+						type: 'reload'
+					}));
+				});
 			}
 		});
 
@@ -191,11 +217,74 @@ module.exports = function( params ) {
 					remotes[i] = undefined
 			}
 			delete sockets[ws.id];
-			sendRemoteStatuses();
+			sendRemoteStatuses( false );
 		});
 	});
 
-	function sendRemoteStatuses() {
+	function countdownTick() {
+		turnTicks++;
+		console.log( 'countdown tick: ' + turnTicks + '/' + turnLength );
+		if ( turnTicks >= turnLength ) {
+			console.log( 'time to switch!' );
+			var newRemote3DIndex = activeRemote3DIndex==0?1:0;
+			var newRemote2DIndex = activeRemote2DIndex==3?2:3;
+			activateRemotes( newRemote3DIndex, newRemote2DIndex );
+		}
+		else {
+			turnTickIntervalId = setTimeout( countdownTick, 1000 );
+		}
+
+	}
+
+	function activateRemotes( remote3DIndex, remote2DIndex ) {
+
+		console.log( 'activating 3D on index ' + remote3DIndex );
+		console.log( 'activating 2D on index ' + remote2DIndex );
+
+		clearTimeout( turnTickIntervalId );
+
+		// ensure the right remotes get switched off
+		var deactivate3DIndex = remote3DIndex==0?1:0;
+		var deactivate2DIndex = remote2DIndex==3?2:3;
+
+		// send the old remotes deactivation messages
+		if ( remotes[deactivate3DIndex] ) {
+			remotes[deactivate3DIndex].send(JSON.stringify({
+				type: 'deactivate',
+				countdownLength: turnLength
+			}));
+		}
+		if ( remotes[deactivate2DIndex] ) {
+			remotes[deactivate2DIndex].send(JSON.stringify({
+				type: 'deactivate',
+				countdownLength: turnLength
+			}));
+		}
+
+		// send the remotes activation messages
+		if ( remotes[remote3DIndex] ) {
+			setRemote3D( remotes[remote3DIndex] );
+			remotes[remote3DIndex].send(JSON.stringify({
+				type: 'activate'
+			}));
+		}
+		if ( remotes[remote2DIndex] ) {
+			setRemote2D( remotes[remote2DIndex] );
+			remotes[remote2DIndex].send(JSON.stringify({
+				type: 'activate'
+			}));
+		}
+
+		turnTicks = 0;
+		turnTickIntervalId = setTimeout( countdownTick, 1000 );
+
+		sendRemoteStatuses();
+
+	}
+
+	function sendRemoteStatuses( messageRemotes ) {
+
+		messageRemotes = ( typeof messageRemotes === 'undefined' ) ? true : messageRemotes;
 
 		var remoteInfos = new Array();
 		// fill in whatever info about each remote we want to send
@@ -212,6 +301,7 @@ module.exports = function( params ) {
 			});
 		}
 
+		// this is for sending info about the remotes to server control pages
 		for ( s in sockets ) {
 			if ( sockets[s].serverControl ) {
 				console.log( s + ' server control' );
@@ -222,14 +312,19 @@ module.exports = function( params ) {
 			}
 		}
 
-		for ( var i=0; i<remotes.length; i++ ) {
-			if ( remotes[i] == undefined )
-				continue;
-			remotes[i].send(JSON.stringify({
-				type: 'setActive',
-				active: remotes[i].remote3D || remotes[i].remote2D,
-				touchInterval: touchInterval
-			}));
+		if ( messageRemotes ) {
+			// this is for sending each remote its status as active or inactive
+			for ( var i=0; i<remotes.length; i++ ) {
+				if ( remotes[i] == undefined || remotes[i].readyState != WebSocket.OPEN )
+					continue;
+
+				// console.log( Object.keys(remotes[i]) );
+				remotes[i].send(JSON.stringify({
+					type: 'setActive',
+					active: remotes[i].remote3D || remotes[i].remote2D,
+					touchInterval: touchInterval
+				}));
+			}
 		}
 	}
 
@@ -250,6 +345,7 @@ module.exports = function( params ) {
 			if ( remotes[i] != undefined && remotes[i].remote3D && remotes[i] != ws ) 
 				remotes[i].remote3D = false;
 		}
+		activeRemote3DIndex = remotes.indexOf( ws );
 	}
 	function setRemote2D( ws ) {
 		if ( ws == undefined ) {
@@ -262,6 +358,7 @@ module.exports = function( params ) {
 			if ( remotes[i] != undefined && remotes[i].remote2D && remotes[i] != ws ) 
 				remotes[i].remote2D = false;
 		}
+		activeRemote2DIndex = remotes.indexOf( ws );
 	}
 
 	function setRemoteNum( ws, num ) {
