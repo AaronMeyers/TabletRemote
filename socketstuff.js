@@ -84,7 +84,7 @@ module.exports = function( params ) {
 				// 	console.log( 'touch started');
 				// if ( json.phase == 'end' )
 				// 	console.log( 'touch ended' );
-				
+
 				if ( ws.remote3D ) {
 					sendOscTouch( '/touch3D', json.phase, json.index, json.x, json.y, json.w, json.h );
 				}
@@ -213,7 +213,7 @@ module.exports = function( params ) {
 				clearTimeout( turnTickIntervalId );
 
 				remotes.forEach(function(r){
-					if ( r.readyState != WebSocket.OPEN )
+					if ( r && r.readyState != WebSocket.OPEN )
 						return;
 					r.send(JSON.stringify({
 						type: 'reload'

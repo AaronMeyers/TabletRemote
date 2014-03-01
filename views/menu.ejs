@@ -5,6 +5,7 @@
 <script src="javascripts/menu.js"></script>
 <script type="text/javascript">
 
+	var menu;
 
 	$(document).on( 'ready', function() {
 
@@ -15,8 +16,9 @@
 		// menu.init( effectInfo2D.concat( effectInfo2D, effectInfo2D ) );
 		// menu.init( effectInfo3D.concat( effectInfo3D, effectInfo3D ) );
 
-		var menu = new Menu();
-		menu.init( effectInfo2D.concat( effectInfo2D ) );
+		menu = new Menu();
+		// menu.init( effectInfo2D.concat( effectInfo2D ) );
+		menu.init( effectInfo2D );
 		// menu.open();
 
 
@@ -26,7 +28,7 @@
 			if ( key == '2' ) {
 				console.log( 'initializing 2D menu' );
 				menu.kill();
-				menu = new Menu( 600, 200 );
+				menu = new Menu( );
 				menu.init( effectInfo2D.concat( effectInfo2D ) );
 			}
 			else if ( key == '3' ) {

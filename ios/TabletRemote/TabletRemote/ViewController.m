@@ -6,6 +6,12 @@
 
 @implementation ViewController
 
+-(IBAction)goButtonPressed:(id)sender {
+    NSString *urlString = [NSString stringWithFormat:@"http://%@", [self.addressTextField text]];
+    NSURL *url = [NSURL URLWithString:urlString];
+    [self.remoteWebView loadRequest:[NSURLRequest requestWithURL:url]];
+}
+
 #pragma mark UITextFieldDelegate
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
@@ -31,6 +37,7 @@
     NSLog( @"web view finished load of %@", webView.request.URL.absoluteString );
     [UIView animateWithDuration:1.0 animations:^{
         [self.addressTextField setAlpha:0.0];
+        [self.goButton setAlpha:0.0];
     } completion:^(BOOL finished) {
         
     }];
@@ -40,6 +47,7 @@
     NSLog( @"long press" );
     [UIView animateWithDuration:1 animations:^{
         [self.addressTextField setAlpha:1.0];
+        [self.goButton setAlpha:1.0];
     } completion:^(BOOL finished) {
         
     }];
@@ -50,6 +58,9 @@
     [super viewDidLoad];
     if ( [[NSUserDefaults standardUserDefaults] stringForKey:@"lastAddress"] ) {
         [self.addressTextField setText:[[NSUserDefaults standardUserDefaults] stringForKey:@"lastAddress"]];
+        NSString *urlString = [NSString stringWithFormat:@"http://%@", [self.addressTextField text]];
+        NSURL *url = [NSURL URLWithString:urlString];
+        [self.remoteWebView loadRequest:[NSURLRequest requestWithURL:url]];
     }
     
     [self.longPress setMinimumPressDuration:1];

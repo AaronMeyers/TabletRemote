@@ -128,7 +128,9 @@ Menu.prototype.clear = function() {
 	$('#menu-button').off( 'touchstart' );
 }
 
-Menu.prototype.init = function( items ) {
+Menu.prototype.init = function( items, startClosed ) {
+
+	startClosed = (typeof startClosed === 'undefined' ) ? false : startClosed;
 
 	if ( this.initialized ) {
 		console.log( 'clearing!' );
@@ -141,15 +143,28 @@ Menu.prototype.init = function( items ) {
 		var item = clone.find('.menu-item');
 		var itemNum = (i%10+1);
 
-		item.find('.menu-item-title').html( items[i].name );
+		// item.find('.menu-item-title').html( items[i].name );
 		// item.find('img').attr( 'src', 'images/effect-thumbs/' + items[i].img );
+		item.find('img').hide();
 
 		// var rotation = ( i / items.length ) * 360 + this.trackRotationOffset;
 		var rotation = ( ( i / items.length ) * 360 + this.trackRotationOffset ) % 360;
 		if ( rotation > 180 )
 			rotation = rotation - 360;
 
+		var crystal = new Crystal( this.itemWidth-400, this.itemHeight, item );
+		$(crystal.canvas).css({
+			position: 'relative',
+			float: 'left',
+			left: 150
+		});
+		crystal.generate();
+
 		item.css({
+			background: 'none',
+			border: 'none',
+
+
 			visibility: 'visible',
 			// visibility: 'hidden',
 			width: this.itemWidth,
@@ -161,6 +176,7 @@ Menu.prototype.init = function( items ) {
 		item.attr( 'rotation', rotation );
 		$('#menu').append( clone );
 		this.items.push( item );
+		$('#menu-button').hide();
 	}
 	// keep menu in scope
 	var menu = this;
@@ -195,14 +211,15 @@ Menu.prototype.init = function( items ) {
 		menu.startTracking( e.originalEvent );
 	});
 
-	if ( !this.initialized ) {
+	// if ( !this.initialized ) {
 		this.scroll();
-		this.close( true );
+		if ( startClosed )
+			this.close( true );
 		this.initialized = true;
-	}
-	else {
-		this.trackRotationOffset = 0;
-	}
+	// }
+	// else {
+	// 	this.trackRotationOffset = 0;
+	// }
 
 }
 
