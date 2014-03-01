@@ -1,11 +1,13 @@
 <% layout('layout') -%>
 
 <script src="javascripts/utils.js"></script>
+<script src="javascripts/dat.gui.min.js"></script>
 <script src="javascripts/crystalgen.js"></script>
 <script src="javascripts/menu.js"></script>
 <script type="text/javascript">
 
 	var menu;
+	var gui;
 
 	$(document).on( 'ready', function() {
 
@@ -16,6 +18,10 @@
 		// menu.init( effectInfo2D.concat( effectInfo2D, effectInfo2D ) );
 		// menu.init( effectInfo3D.concat( effectInfo3D, effectInfo3D ) );
 
+		// gui = new dat.GUI({
+		// 	width: 300,
+		// 	height: 600
+		// });
 		menu = new Menu();
 		// menu.init( effectInfo2D.concat( effectInfo2D ) );
 		menu.init( effectInfo2D );
@@ -29,16 +35,23 @@
 				console.log( 'initializing 2D menu' );
 				menu.kill();
 				menu = new Menu( );
-				menu.init( effectInfo2D.concat( effectInfo2D ) );
+				menu.init( effectInfo2D );
 			}
 			else if ( key == '3' ) {
 				console.log( 'initializing 3D menu' );
 				menu.kill();
 				menu = new Menu();
-				menu.init( effectInfo3D.concat( effectInfo3D ) );
+				menu.init( effectInfo3D );
 			}
 			else if ( key == 'C' ) {
-				menu.clear();
+				// menu.clear();
+				menu.close();
+			}
+			else if ( key == 'O' ) {
+				menu.open();
+			}
+			else if ( key == 'X' ) {
+				menu.close( true );
 			}
 		});
 	});
@@ -46,10 +59,14 @@
 
 
 <div id="menu-bg">
+	<div id="menu-title"></div>
 	<div id="menu">
-
-		<div id="menu-button"></div>
 	</div>
+</div>
+
+<div id="clonable-menu-box" class="menu-box" style="visibility:hidden">
+	<img src="">
+	<div class="menu-box-title" style="visibility:hidden">TITLE</div>
 </div>
 
 <div id="clonable-menu-item" class="menu-item-wrapper">

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta id="viewport" name="viewport" content ="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+		<title></title>
+		<script type="text/javascript" src="/javascripts/jquery-2.1.0.min.js"></script>
+		<script type="text/javascript" src="/javascripts/bootstrap.min.js"></script>
+		<script type="text/javascript" src="/javascripts/utils.js"></script>
+		<script type="text/javascript" src="/javascripts/crystalgen.js"></script>
+		<script type="text/javascript">
+			var crystals = [];
+			var gems = [];
+			$(document).on( 'ready', function() {
+
+				$('body').css({
+					'background': 'grey'
+				});
+
+				var w = 600, h = 150;
+				for ( var i=0; i<5; i++ ) {
+					var crystal = new Crystal( w, h, $('body') );
+					crystal.generate();
+					$(crystal.canvas).css( 'top', i * h );
+					crystals.push( crystal );
+				}
+
+				var gemW = 200, gemH = 200, gemM = 40;
+				for ( var i=0; i<3; i++ ) {
+					var gem = new Gem( gemW, gemH, gemM, $('body') );
+					$(gem.canvas).css({
+						'top': 20 + i * (gemH + 40),
+						'left': w + 20
+					});
+					gem.generate();
+					gems.push( gem );
+				}
+
+				$(document).on( 'keydown', function(e) {
+					var letter = String.fromCharCode( e.keyCode );
+					if ( letter == 'G' ) {
+						crystals.forEach(function(c) {
+							c.generate();
+						});
+						gems.forEach(function(g){
+							g.generate();
+						});
+					}
+					if ( letter == 'J' ) {
+						gems.forEach(function(g){
+							g.jitter( 2.0 );
+						});
+					}
+				});
+			});
+		</script>
+		<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="/stylesheets/style.css">
+	</head>
+	<body>
+
+	</body>
+</html>

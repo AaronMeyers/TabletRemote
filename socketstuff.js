@@ -17,6 +17,7 @@ module.exports = function( params ) {
 	var socketCounter = 0;
 	var remotes = new Array( 4 );
 	var turnLength = 15;
+	var welcomeLength = 5;
 	var turnTicks = 0;
 	var autoSequence = true;
 	var turnTickIntervalId;
@@ -262,18 +263,18 @@ module.exports = function( params ) {
 		var deactivate3DIndex = remote3DIndex==0?1:0;
 		var deactivate2DIndex = remote2DIndex==3?2:3;
 
+		var deactivationMsg = JSON.stringify({
+				type: 'deactivate',
+				countdownLength: turnLength,
+				welcomeLength: welcomeLength
+		});
+
 		// send the old remotes deactivation messages
 		if ( remotes[deactivate3DIndex] ) {
-			remotes[deactivate3DIndex].send(JSON.stringify({
-				type: 'deactivate',
-				countdownLength: turnLength
-			}));
+			remotes[deactivate3DIndex].send(deactivationMsg);
 		}
 		if ( remotes[deactivate2DIndex] ) {
-			remotes[deactivate2DIndex].send(JSON.stringify({
-				type: 'deactivate',
-				countdownLength: turnLength
-			}));
+			remotes[deactivate2DIndex].send(deactivationMsg);
 		}
 
 		// send the remotes activation messages
@@ -416,7 +417,7 @@ module.exports = function( params ) {
 				h
 			]
 		});
-		udp.send( buf, 0, buf.length, oscPort, oscAddress );
+		udp.send( buf, 0, buf.length, (address=='/touch3D'?oscPort:parseInt(oscPort)+1), oscAddress );
 	}
 
 	function sendOscHeartbeat() {

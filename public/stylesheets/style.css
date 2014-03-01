@@ -76,8 +76,20 @@ canvas {
 
 #menu {
 	position: absolute;
-	left: -100px;
+	left: -150px;
 	-webkit-transform-style: preserve-3d;
+}
+
+#menu-title {
+	position: absolute;
+	right: 0px;
+	color: white;
+	font-size: 40px;
+	vertical-align: middle;
+	line-height: 100px;
+	margin-top: -50px;
+	text-transform: uppercase;
+	margin-right: 30px;
 }
 
 #menu-button {
@@ -90,6 +102,30 @@ canvas {
 	top: -200px;
 	-webkit-transform: translate3d( 0px, 0px, 1000px );
 	position: absolute;
+}
+
+.menu-box {
+	/*border: 3px solid white;*/
+	position: absolute;
+	z-index: -1000
+	/*background: black;*/
+	/*width: 100px;*/
+	/*height: 100px;*/
+}
+
+.menu-box img {
+	position: absolute;
+	/*z-index: 100;*/
+}
+
+.menu-box-title {
+	font-size: 32px;
+	color: white;
+	position: absolute;
+	top: 250px;
+	width: 250px;
+	text-align: center;
+	text-transform: uppercase;
 }
 
 .menu-item img {

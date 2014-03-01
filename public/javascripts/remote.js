@@ -130,14 +130,16 @@ $(document).on( 'ready', function() {
 				// menu.show();
 				menu.kill();
 				menu = new Menu();
-				menu.init( effectInfo3D.concat( effectInfo3D ) );
-				menu.hide(true);
+				menu.init( effectInfo3D );
+				menu.close(true);
+				// menu.hide(true);
 			}
 			else if ( remoteNum == 3 || remoteNum == 4 ) {
 				menu.kill();
 				menu = new Menu();
-				menu.init( effectInfo2D.concat( effectInfo2D ) );
-				menu.hide(true);
+				menu.init( effectInfo2D );
+				menu.close(true);
+				// menu.hide(true);
 			}
 			document.title = remoteNum;
 			$('#activityStatus').text( isActive?'ACTIVE/':'INACTIVE/' + remoteNum );

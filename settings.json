@@ -1,5 +1,5 @@
 {
-    "oscAddress": "169.254.101.104",
+    "oscAddress": "169.254.235.52",
     "oscPort": "12000",
     "heartbeat": false,
     "touchInterval": "20",
