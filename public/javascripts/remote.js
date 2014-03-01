@@ -155,12 +155,12 @@ $(document).on( 'ready', function() {
 		else if ( json.type == 'setActive' ) {
 			if ( isActive && !json.active ) {
 				// console.log( 'becoming inactive' );
-				// isActive = json.active;
+				isActive = json.active;
 			}
 			else if ( !isActive && json.active ) {
 				// console.log( 'becoming active' );
 				// WHEN WE BECOME ACTIVE, SEND THE EFFECT WE ARE USING
-				// isActive = json.active;
+				isActive = json.active;
 			}
 			// touchInterval = json.touchInterval;
 			$('#activityStatus').text( (isActive?'ACTIVE/':'INACTIVE/') + remoteNum ).addClass( isActive?'btn-success':'btn-danger').removeClass( isActive?'btn-danger':'btn-success' );
@@ -197,6 +197,7 @@ $(document).on( 'ready', function() {
 		countdown.slideOut();
 		// put away the menu
 		menu.hide();
+		isActive = true;
 	}
 
 	function deactivate( json ) {
@@ -216,6 +217,7 @@ $(document).on( 'ready', function() {
 		countdown.begin( json.countdownLength );
 		// bring out the menu
 		menu.show();
+		isActive = false;
 	}
 
 	function onResize( e ) {
@@ -289,6 +291,7 @@ $(document).on( 'ready', function() {
 	}
 
 	function sendTouches() {
+
 		var keys = Object.keys( activeTouches );
 		if ( keys.length == 0 )
 			return;
