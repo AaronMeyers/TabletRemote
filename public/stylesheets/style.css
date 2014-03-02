@@ -1,6 +1,21 @@
+
+/*
+@font-face {
+	font-family: UnitedSans;
+	font-weight: normal;
+	src: url( '/fonts/united/UnitedSansRg.otf' ) format('opentype');
+}*/
+
+@font-face {
+	font-family: UnitedSans;
+	font-weight: lighter;
+	src: url( '/fonts/united/UnitedSansRgLt.otf' ) format('opentype');
+}
+
+
 body {
   overflow: hidden;
-  font: 14px Helvetica, Arial, sans-serif;
+  font: 14px UnitedSans, Helvetica, Arial, sans-serif;
   background: black;
 }
 
@@ -16,7 +31,6 @@ a {
 canvas {
 	position: absolute;
 }
-
 #welcome {
 }
 
@@ -52,11 +66,19 @@ canvas {
 	visibility: hidden;
 }
 
-#cave img {
+#wirecanvas {
+	visibility: hidden;
+}
+
+.canvasImage {
 	width: 1024px;
-	position: relative;
+	display: none;
+}
+
+#cave img {
+	/*position: relative;
 	bottom: -297px;
-	-webkit-filter: brightness(50%); 
+	-webkit-filter: brightness(50%); */
 }
 
 #settingsPanel {
@@ -166,10 +188,22 @@ canvas {
 	right: 0px;
 	top: 0px;
 	text-align: right;
-	font-size: 30px;
+	font-size: 24px;
 	font-weight: bold;
 	padding-right: 20px;
 	width: 400px;
+}
+
+#big-countdown {
+	display: none;
+	color: white;
+	font-size: 500px;
+	font-weight: bold;
+	position: absolute;
+	width: 100%;
+	height: 768px;
+	line-height: 768px;
+	text-align: center;
 }
 
 .blink {
@@ -183,9 +217,9 @@ canvas {
 }
 
 .countdownTimer {
-	font-size: 170px;
+	font-size: 120px;
 	font-weight: bold;
-	line-height: 140px;
+	line-height: 120px;
 	/*position: absolute;
 	right: 0px;*/
 }

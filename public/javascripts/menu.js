@@ -171,7 +171,7 @@ Menu.prototype.init = function( items, startClosed ) {
 		var clone = $('#clonable-menu-item').clone();
 		clone.attr( 'id', 'item'+i );
 		var item = clone.find('.menu-item');
-		var itemNum = (i%10+1);
+		// console.log( item );
 
 		var box = $('#clonable-menu-box').clone();
 		box.attr( 'id', 'box'+i );
@@ -187,11 +187,13 @@ Menu.prototype.init = function( items, startClosed ) {
 		});
 		clone.append( box );
 		item.box = box;
+		item.visible = true;
 
 		// add a gem to the box
 		var gem = new Gem( this.boxWidth, this.boxHeight, this.boxMargin, box );
 		gem.generate();
 		box.gem = gem;
+		box.visible = true;
 
 		// item.find('.menu-item-title').html( items[i].name );
 		box.find('.menu-box-title').html( items[i].name );
@@ -234,7 +236,6 @@ Menu.prototype.init = function( items, startClosed ) {
 			top: -this.itemHeight/2,
 			// '-webkit-transform'
 		});
-		item.attr( 'item-num', itemNum );
 		item.attr( 'rotation', rotation );
 		$('#menu').append( clone );
 		this.items.push( item );
@@ -351,20 +352,27 @@ Menu.prototype.scroll = function() {
 			rotation += 360;
 		var boxY = utils.cmap( rotation, -180, 180, -this.boxExtents, this.boxExtents );	
 
-		if ( Math.abs(rotation) > 90 && item.is(':visible') ) {
+		// if ( Math.abs(rotation) > 90 && item.is(':visible') ) {
+		if ( Math.abs(rotation) > 90 && item.visible ) {
 			item.hide();
+			item.visible = false;
 			continue;
 		}
-		else if ( Math.abs(rotation) < 90 && !item.is(':visible') ) {
+		// else if ( Math.abs(rotation) < 90 && !item.is(':visible') ) {
+		else if ( Math.abs(rotation) < 90 && !item.visible ) {
 			item.show();
+			item.visible = true;
 			continue;
 		}
-		else if ( Math.abs(boxY) - this.boxHeight/2 > window.innerHeight/2 && box.is(':visible') ) {
+		// else if ( Math.abs(boxY) - this.boxHeight/2 > window.innerHeight/2 && box.is(':visible') ) {
+		else if ( Math.abs(boxY) - this.boxHeight/2 > window.innerHeight/2 && box.visible ) {
 			box.hide();
+			box.visible = false;
 			continue;
 		}
-		else if ( Math.abs(boxY) - this.boxHeight/2 < window.innerHeight/2 && !box.is(':visible') ) {
+		else if ( Math.abs(boxY) - this.boxHeight/2 < window.innerHeight/2 && !box.visible ) {
 			box.show();
+			box.visible = true;
 		}
 
 		var boxSeparation = ( this.boxExtents * 2 ) / this.items.length;
@@ -381,7 +389,11 @@ Menu.prototype.scroll = function() {
 
 		var z = (rotation+90) % 360;
 		var extend = this.getXPosForRotation( rotation );
-		box.css( 'top', boxY );
+		box.css({
+			// 'top': boxY 
+			'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px)'
+		});
+		box.boxY = boxY;
 		// box.gem.jitter( 2.0 );
 		var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
 
@@ -414,6 +426,7 @@ Menu.prototype.open = function() {
 	for ( var i=0; i<this.items.length; i++ ) {
 		var item = this.items[i];
 		var box = item.box;
+		var boxY = box.boxY==undefined?0:box.boxY;
 		if ( item.is(':visible') ) {
 			var rotation = item.attr('rotation');
 			var delay = utils.cmap( Math.abs( rotation ), 0, 90, 0, 300 );
@@ -434,14 +447,16 @@ Menu.prototype.open = function() {
 		else {
 			box.hide();
 			box.css({
-				'-webkit-transform': 'scale3d(1,1,1)',
+				'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px) scale3d(1,1,1)',
+				// '-webkit-transform': 'scale3d(1,1,1)',
 				'-webkit-transform': ''
 			})
 		}
 
 		if ( box.is(':visible') ) {
 			box.css({
-				'-webkit-transform': 'scale3d(1,1,1)',
+				'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px) scale3d(1,1,1)',
+				// '-webkit-transform': 'scale3d(1,1,1)',
 				'-webkit-transition': '-webkit-transform .3s ease-in-out ' + delay + 'ms'
 			});
 		}
@@ -457,17 +472,29 @@ Menu.prototype.open = function() {
 }
 
 Menu.prototype.opened = function() {
-	console.log( 'i just opened: ' + this.name );
+	// console.log( 'i just opened: ' + this.name );
 	this.retracted = false;
 	this.transitioning = false;
 	$('.menu-item').css({
+		'-webkit-transition': ''
+	});
+	$('.menu-box').css({
 		'-webkit-transition': ''
 	});
 	$('#menu-bg').css( 'pointer-events', 'auto' );
 }
 
 Menu.prototype.closed = function() {
-	console.log( 'i just closed: ' + this.name );
+	// console.log( 'i just closed: ' + this.name );
+
+	for ( var i=0; i<this.items.length; i++ ) {
+		var box = this.items[i].box;
+		var boxY = box.boxY==undefined?0:box.boxY;
+		box.css({
+			'-webkit-transition': '',
+			'-webkit-transform': 'translate3d(0px,'+boxY+'px,0px) scale3d(0,0,0)'
+		});
+	}
 	this.retracted = true;
 	this.transitioning = false;
 }
@@ -475,17 +502,22 @@ Menu.prototype.closed = function() {
 Menu.prototype.close = function( immediate ) {
 	var menu = this;
 
+	if ( this.retracted )
+		return;
+
 	if ( immediate == undefined ) {
 		immediate = false;
 	}
 
 	var transitionMillis = 300;
 	var maxDelayMillis = 0;
+	var visibleBoxes = 0;
 
 
 	for ( var i=0; i<this.items.length; i++ ) {
 		var item = this.items[i];
 		var box = item.box;
+		var boxY = box.boxY==undefined?0:box.boxY;
 		if ( item.is(':visible') ) {
 			var rotation = item.attr('rotation');
 			var delay = utils.cmap( Math.abs( rotation ), 90, 0, 0, 100 );
@@ -493,7 +525,6 @@ Menu.prototype.close = function( immediate ) {
 			var z = (rotation+90) % 360;
 			var transform = 'rotate( ' + rotation + 'deg ) translate3d( -800px, 0px, ' + z + 'px )';
 			var transition = '-webkit-transform ' + transitionMillis + 'ms ease-in-out ' + delay + 'ms';
-			// var transition = 'width .3s ease-in-out ' + delay + 'ms';
 			item.css({
 				'-webkit-transform': transform,
 				// width: 170,
@@ -502,15 +533,18 @@ Menu.prototype.close = function( immediate ) {
 		}
 
 		if ( box.is(':visible') ) {
+			visibleBoxes++;
+			var transform = 'translate3d(0px,'+(boxY)+'px,0px) scale( 0.005, 0.005)';
+			var transition = (immediate?undefined:'-webkit-transform '+ transitionMillis +'ms ease-in-out ' + delay + 'ms');
 			box.css({
-				'-webkit-transform': 'scale3d( 0, 0, 0)',
-				'-webkit-transition': (immediate?undefined:'-webkit-transform .3s ease-in-out ' + delay + 'ms')
+				'-webkit-transform': transform,
+				// '-webkit-transform': 'scale3d( 0, 0, 0)',
+				'-webkit-transition': transition
 			});
 		}
 	}
 
 	$('#menu-title').css({
-		// 'opacity': 0,
 		'right': -300,
 		'-webkit-transition': (immediate?undefined:'right .3s ease-in-out')
 	});

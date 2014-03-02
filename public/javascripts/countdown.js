@@ -1,4 +1,8 @@
-function Countdown() {
+function Countdown( params ) {
+	params = (typeof params === 'undefined') ? {} : params;
+
+	this.finalCountdownCallback = params.finalCountdownCallback;
+	// console.log( 'finalCountdownCallback: ' + this.finalCountdownCallback );
 	this.name = "countdown";
 	this.tickIntervalId;
 	this.height = $('#countdown').height();
@@ -64,6 +68,11 @@ Countdown.prototype.finished = function() {
 Countdown.prototype.tick = function() {
 	var count = parseInt( $('.countdownSeconds').html() );
 	count--;
+
+	if ( count == 10 && this.finalCountdownCallback ) {
+		console.log( 'calling last minute callback' );
+		this.finalCountdownCallback();
+	}
 
 	$('#welcome-seconds').html( count + (count==1?' second':' seconds') );
 	$('#chosen-seconds').html( count + (count==1?' second':' seconds') );

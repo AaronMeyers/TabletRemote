@@ -10,21 +10,31 @@ var activeTouches = {};
 var canvas;
 var fingerCanvas;
 var fingerImg;
+var wireCanvas;
 var caveImg;
 var width, height;
 var menu;
 var welcomeTimeout;
 var chosenEffectName;
 var chosenEffectIndex;
+var imgWidth, imgHeight;
 
 $(document).on( 'ready', function() {
 
 	canvas = $('#canvas')[0];
 	fingerCanvas = $('#fingercanvas')[0];
+	wireCanvas = $('#wirecanvas')[0];
 	fingerImg = $('#clonablefinger').find('img')[0];
-	caveImg = $('#cave').find('img')[0];
+	// caveImg = $('#cave').find('img')[0];
+	caveImg = $('#wireframeCave')[0];
+	shadedImg = $('#shadedCave')[0];
+	imgWidth = 1024;
+	console.log( caveImg.width +',' + caveImg.height );
+	imgHeight = (imgWidth/caveImg.width) * caveImg.height;
 
-	countdown = new Countdown();
+	// $('.canvasImage').width(window.innerHeight);
+
+	countdown = new Countdown({finalCountdownCallback:finalCountdown});
 	particleSystem = new ParticleSystem( canvas.getContext( '2d' ), 300 );
 	touchIntervalId = setInterval( sendTouches, touchInterval );
 
@@ -69,27 +79,27 @@ $(document).on( 'ready', function() {
 	$(window).on( 'resize', onResize );
 	onResize();
 
+	function finalCountdown() {
+		menu.close();
+		countdown.slideOut();
+		$('#welcome').fadeOut();
+		$('#effectChosen').fadeOut();
+		$('#big-countdown').fadeIn();
+	}
+
 	function loop() {
 
 		if ( !isActive ) {
 			requestAnimationFrame( loop );
 			return;
 		}
-		// console.log( 'loop' );
 		var fingerctx = fingerCanvas.getContext( "2d" );
 		var ctx = canvas.getContext( "2d" );
+		var wirectx = wireCanvas.getContext( "2d" );
 
+		// first deal with fingers
 		fingerctx.fillStyle = "rgba(0,0,0,.025)";
 		fingerctx.fillRect( 0, 0, width, height );
-
-		// ctx.clearRect( 0, 0, width, height );
-		ctx.fillStyle = 'black';
-		ctx.fillRect( 0, 0, width, height );
-
-		ctx.globalCompositeOperation = 'source-over';
-		ctx.drawImage( caveImg, 0, 120, caveImg.width, caveImg.height );
-
-		// switch to multiply blending
 
 		var size = 64;
 		size = 200;
@@ -99,8 +109,34 @@ $(document).on( 'ready', function() {
 			particleSystem.spawnParticles( 5, touch.x, touch.y );
 			fingerctx.drawImage( fingerImg, touch.x - size/2, touch.y - size/2, size, size );
 		}
-		ctx.globalCompositeOperation = 'soft-light';
+
+
+		// // ctx.clearRect( 0, 0, width, height );
+		// // fill it with black
+		ctx.fillStyle = 'black';
+		ctx.fillRect( 0, 0, width, height );
+
+		// // draw the base shaded image
+		ctx.globalCompositeOperation = 'source-over';
+		ctx.drawImage( shadedImg, 0, 120, 1024, (1024/caveImg.width)*caveImg.height );
+
+		ctx.globalCompositeOperation = 'multiply';
 		ctx.drawImage( fingerCanvas, 0, 0, width, height );
+
+		wirectx.fillStyle = 'black';
+		wirectx.fillRect( 0, 0, width, height );
+
+		wirectx.globalCompositeOperation = 'source-over';
+		wirectx.drawImage( caveImg, 0, 120, 1024, (1024/caveImg.width)*caveImg.height );
+
+		wirectx.globalCompositeOperation = 'soft-light';
+		wirectx.drawImage( fingerCanvas, 0, 0, width, height );
+
+		ctx.globalCompositeOperation = 'lighten';
+		ctx.drawImage( wireCanvas, 0, 0, width, height );
+
+		// ctx.globalCompositeOperation = 'soft-light';
+		// ctx.drawImage( fingerCanvas, 0, 0, width, height );
 		ctx.globalCompositeOperation = 'source-over';
 		particleSystem.update( ctx );
 		requestAnimationFrame( loop );
@@ -225,10 +261,12 @@ $(document).on( 'ready', function() {
 		.on( 'webkitTransitionEnd', function(e) {
 			$(this).off( 'webkitTransitionEnd' );
 		});
-		// put away the countdown
+		menu.close();
 		countdown.slideOut();
-		// put away the menu
-		menu.hide();
+		$('#welcome').fadeOut();
+		$('#effectChosen').fadeOut();
+		$('#big-countdown').delay(1000).fadeOut();
+
 		isActive = true;
 	}
 
@@ -247,6 +285,10 @@ $(document).on( 'ready', function() {
 		});
 		// bring out the countdown
 		// countdown.slideIn();
+		$('#big-countdown').hide();
+		menu.close();
+		countdown.slideOut();
+
 		$('#welcome').fadeIn();
 		$('#welcome').on( 'touchstart', killWelcome );
 		welcomeTimeout = setTimeout( killWelcome, 1000 * json.welcomeLength );
@@ -307,6 +349,9 @@ $(document).on( 'ready', function() {
 
 		fingerCanvas.width = width;
 		fingerCanvas.height = height;
+
+		wireCanvas.width = width;
+		wireCanvas.height = height;
 	}
 
 	function sendSocketMessage( jsonString ) {

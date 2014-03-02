@@ -7,9 +7,12 @@
 <script src="javascripts/remote.js"></script>
 <script src="javascripts/particles.js"></script>
 
-<div id="cave">
-	<img src="/images/wirecave.png">
-</div>
+<!-- <div id="cave"> -->
+	<!-- <img src="/images/wirecave.png"> -->
+<img class="canvasImage" id="wireframeCave" src="/images/wireframed.png">
+<!-- </div> -->
+
+<img class="canvasImage" id="shadedCave" src="/images/shadedcave1.png" style="display:none">
 
 <div id="test">
 
@@ -35,14 +38,19 @@
 	</div>
 </div>
 
+<div id="big-countdown">
+	<span class="countdownColon">:</span><span class="countdownSeconds">60</span>
+</div>
+
 <div class="iphone">
 
 	<div id="clonablefinger" class="finger">
-		<img src="/images/finger.png" style="max-width:100%; max-height:100%;">
+		<img src="/images/softfinger50.png" style="max-width:100%; max-height:100%;">
 	</div>
 
 	<canvas id="canvas"></canvas>
 	<canvas id="fingercanvas"></canvas>
+	<canvas id="wirecanvas"></canvas>
 	
 </div>
 
