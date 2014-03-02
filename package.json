@@ -11,6 +11,7 @@
     "ws": "*",
     "ejs": "*",
     "ejs-locals": "x.x",
-    "osc-min": "x.x"
+    "osc-min": "x.x",
+    "dmx": "x.x"
   }
 }
