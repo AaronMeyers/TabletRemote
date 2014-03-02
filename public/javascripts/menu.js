@@ -370,24 +370,20 @@ Menu.prototype.scroll = function() {
 		var boxSeparation = ( this.boxExtents * 2 ) / this.items.length;
 
 		if ( Math.abs(boxY) < boxSeparation/2 ) {
-			// console.log( i );
 			$('#menu-title').html( box.find('.menu-box-title').html() );
 			var opacity = utils.cmap( Math.abs(boxY), (boxSeparation/2)-50, 50, 0, 1 );
 			$('#menu-title').css({
+				// '-webkit-filter': 'brightness('+(opacity*100)+'%)',
 				'opacity': opacity,
 				'top': window.innerHeight/2 + (boxY>0?1:-1) * ((1-opacity) * boxSeparation/2)
 			});
 		}
-		// console.log( boxSeparation );
 
 		var z = (rotation+90) % 360;
 		var extend = this.getXPosForRotation( rotation );
 		box.css( 'top', boxY );
 		// box.gem.jitter( 2.0 );
-		// item.find( '.menu-item-debug' ).html( 'rotation: ' + rotation.toFixed(1) + '<br/>width: ' + theWidth.toFixed(1) );
 		var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
-		// if ( i==0 )
-		// 	console.log( this.transitioning + ' ' + transform );
 
 		item.css({
 			'-webkit-transform': transform,
@@ -396,7 +392,7 @@ Menu.prototype.scroll = function() {
 		item.attr( 'rotation', rotation );
 	}
 
-	requestAnimationFrame(this.scroll.bind(this));
+	requestAnimationFrame(this.scroll.bind(this), 1000/30);
 }
 
 Menu.prototype.getXPosForRotation = function( rotation ) {
@@ -411,17 +407,22 @@ Menu.prototype.getItemWidthForRotation = function( rotation ) {
 
 Menu.prototype.open = function() {
 	var menu = this;
+
+	var transitionMillis = 300;
+	var maxDelayMillis = 0;
+
 	for ( var i=0; i<this.items.length; i++ ) {
 		var item = this.items[i];
 		var box = item.box;
 		if ( item.is(':visible') ) {
 			var rotation = item.attr('rotation');
 			var delay = utils.cmap( Math.abs( rotation ), 0, 90, 0, 300 );
+			maxDelayMillis = delay > maxDelayMillis ? delay : maxDelayMillis;
 			var z = (rotation+90) % 360;
 			var extend = this.getXPosForRotation( rotation );
 			var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
 
-			var transition = '-webkit-transform .3s ease-in-out ' + delay + 'ms';
+			var transition = '-webkit-transform ' + transitionMillis + 'ms ease-in-out ' + delay + 'ms';
 			// var transition = 'width .3s ease-in-out ' + delay + 'ms';
 			item.css({
 				// visibility: 'visible',
@@ -451,7 +452,7 @@ Menu.prototype.open = function() {
 		});
 
 	}
-	setTimeout(this.opened.bind(this), 1000 );
+	setTimeout(this.opened.bind(this), (maxDelayMillis+transitionMillis) );
 	menu.transitioning = true;
 }
 
@@ -478,15 +479,20 @@ Menu.prototype.close = function( immediate ) {
 		immediate = false;
 	}
 
+	var transitionMillis = 300;
+	var maxDelayMillis = 0;
+
+
 	for ( var i=0; i<this.items.length; i++ ) {
 		var item = this.items[i];
 		var box = item.box;
 		if ( item.is(':visible') ) {
 			var rotation = item.attr('rotation');
 			var delay = utils.cmap( Math.abs( rotation ), 90, 0, 0, 100 );
+			maxDelayMillis = delay > maxDelayMillis ? delay : maxDelayMillis;
 			var z = (rotation+90) % 360;
 			var transform = 'rotate( ' + rotation + 'deg ) translate3d( -800px, 0px, ' + z + 'px )';
-			var transition = '-webkit-transform .3s ease-in-out ' + delay + 'ms';
+			var transition = '-webkit-transform ' + transitionMillis + 'ms ease-in-out ' + delay + 'ms';
 			// var transition = 'width .3s ease-in-out ' + delay + 'ms';
 			item.css({
 				'-webkit-transform': transform,
@@ -511,7 +517,9 @@ Menu.prototype.close = function( immediate ) {
 
 	$('#menu-bg').css( 'pointer-events', 'none' );
 
-	setTimeout( this.closed.bind(this), (immediate?0:1000) );
+	console.log( 'max delay millis: ' + maxDelayMillis );
+
+	setTimeout( this.closed.bind(this), (immediate?0:(maxDelayMillis+transitionMillis)) );
 	menu.transitioning = true;
 }
 

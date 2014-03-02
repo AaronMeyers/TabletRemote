@@ -16,8 +16,8 @@ module.exports = function( params ) {
 	var sockets = {};
 	var socketCounter = 0;
 	var remotes = new Array( 4 );
-	var turnLength = 15;
-	var welcomeLength = 5;
+	var turnLength = 60;
+	var welcomeLength = 15;
 	var turnTicks = 0;
 	var autoSequence = true;
 	var turnTickIntervalId;
@@ -70,158 +70,13 @@ module.exports = function( params ) {
 		ws.removeControl = false;
 		ws.remote3D = false;
 		ws.remote2D = false;
+		ws.effectIndex = 0;
 		sockets[id] = ws;
 		// console.log( 'connection opened to ' + ws.id + ' at ' + ws.url );
 		console.log( 'made a connection' );
 		console.log( 'web socket connected at ' + ws._socket.remoteAddress );
 
-		ws.on('message', function(message) {
-			// HANDLE INCOMING MESSAGES
-			var json = JSON.parse( message );
-
-			if ( json.type == 'touchCoord' ) {
-
-				// if ( json.phase == 'start' )
-				// 	console.log( 'touch started');
-				// if ( json.phase == 'end' )
-				// 	console.log( 'touch ended' );
-
-				if ( ws.remote3D ) {
-					sendOscTouch( '/touch3D', json.phase, json.index, json.x, json.y, json.w, json.h );
-				}
-				if ( ws.remote2D ) {
-					sendOscTouch( '/touch2D', json.phase, json.index, json.x, json.y, json.w, json.h );
-				}
-			}
-			else if ( json.type == 'setRemoteNum' ) {
-				// console.log ( 'sockets length: ' + sockets.length );
-				setRemoteNum( ws, json.num );
-				ws.send( message );
-			}
-			else if ( json.type == 'registerRemoteControl' ) {
-				console.log( 'registered a remote control' );
-				ws.remoteControl = true;
-				ws.send( message );
-
-				// temporary solution for auto-assigning remote #'s and making them active
-				// first find the next available slot
-				var remoteNum;
-				var remote3D = false;
-				var remote2D = false;
-				for ( var i=0; i<remotes.length; i++ ) {
-					if ( remotes[i] == undefined && remoteNum == undefined )
-						remoteNum = i+1;
-					if ( remotes[i] != undefined && remotes[i].remote3D )
-						remote3D = true;
-					if ( remotes[i] != undefined && remotes[i].remote2D )
-						remote2D = true;
-				}
-
-				console.log( 'remote3D: ' + remote3D );
-				console.log( 'remote2D: ' + remote2D );
-				setRemoteNum( ws, remoteNum );
-				ws.send(JSON.stringify({
-					type: 'setRemoteNum',
-					num: remoteNum
-				}));
-				// if there is not active 3D remote, activate this one
-				if ( !remote3D ) {
-					setRemote3D( ws );
-					sendRemoteStatuses();
-				}
-				else if ( !remote2D ) {
-					setRemote2D( ws );
-					sendRemoteStatuses();
-				}
-				// next make it active
-			}
-			else if ( json.type == 'registerServerControl' ) {
-				console.log( 'registered a server control' );
-				json.oscAddress = oscAddress;
-				json.oscPort = oscPort;
-				json.heartbeat = heartbeat;
-				json.touchInterval = touchInterval;
-				json.autoSequence = autoSequence;
-				ws.serverControl = true;
-				ws.send( JSON.stringify(json) );
-				sendRemoteStatuses();
-			}
-			else if ( json.type == 'setHeartbeat' ) {
-				heartbeat = json.heartbeat;
-				saveSettings();
-				ws.send( message );
-			}
-			else if ( json.type == 'setAutoSequence' ) {
-				autoSequence = json.autoSequence;
-				saveSettings();
-				ws.send( message );
-			}
-			else if ( json.type == 'setTouchInterval' ) {
-				// validate the touch interval
-				var regex = /[0-9]|\./;
-				if ( regex.test( json.touchInterval ) )
-					touchInterval = json.touchInterval;
-				else
-					console.log ('invalid touch interval' );
-				json.touchInterval = touchInterval;
-				saveSettings();
-				ws.send( JSON.stringify( json ) );
-			}
-			else if ( json.type == 'setOscInfo' ) {
-				if ( validateIpAndPort( json.oscInfo ) ) {
-					console.log( 'valid osc info' );
-					var parts = json.oscInfo.split( ':' );
-					oscAddress = parts[0];
-					oscPort = parts[1];
-					saveSettings();
-				}
-				else
-					console.log( 'invalid' );
-				json.oscInfo = oscAddress + ':' + oscPort;
-				ws.send( JSON.stringify( json ) );
-			}
-			else if ( json.type == 'setRemote3D' ) {
-				setRemote3D( remotes[json.num-1] );
-				sendRemoteStatuses();
-			}
-			else if ( json.type == 'setRemote2D' ) {
-				setRemote2D( remotes[json.num-1] );
-				sendRemoteStatuses();
-			}
-			else if ( json.type == 'showSettings' ) {
-				if ( remotes[json.num-1] != undefined ) {
-					remotes[json.num-1].send(JSON.stringify({
-						type: 'showSettings'
-					}));
-				}
-			}
-			else if ( json.type == 'startCountdown' ) {
-				if ( remotes[json.num-1] != undefined ) {
-					remotes[json.num-1].send(JSON.stringify({
-						type: 'startCountdown',
-						length: turnLength
-					}));
-				}
-			}
-			else if ( json.type == 'activateRemotes' ) {
-				var remote3DIndex = json.remote3D - 1;
-				var remote2DIndex = json.remote2D - 1;
-
-				activateRemotes( remote3DIndex, remote2DIndex );
-			}
-			else if ( json.type == 'reloadRemotes' ) {
-
-				clearTimeout( turnTickIntervalId );
-
-				remotes.forEach(function(r){
-					if ( r && r.readyState != WebSocket.OPEN )
-						return;
-					r.send(JSON.stringify({
-						type: 'reload'
-					}));
-				});
-			}
-		});
+		ws.on( 'message', ws.onSocketMessage.bind(ws) );
 
 		ws.on('close', function() {
 			console.log( 'socket closed with id: ' + ws.id );
@@ -234,6 +89,154 @@ module.exports = function( params ) {
 			sendRemoteStatuses( false );
 		});
 	});
+
+	WebSocket.prototype.onSocketMessage = function( message ) {
+
+		var json = JSON.parse( message );
+
+		console.log( 'received socket message: ' + json.type );
+
+		if ( json.type == 'touchCoord' ) {
+
+			if ( this.remote3D ) {
+				sendOscTouch( '/touch3D', json.phase, json.index, json.x, json.y, json.w, json.h );
+			}
+			if ( this.remote2D ) {
+				sendOscTouch( '/touch2D', json.phase, json.index, json.x, json.y, json.w, json.h );
+			}
+		}
+		else if ( json.type == 'setRemoteNum' ) {
+			setRemoteNum( ws, json.num );
+			this.send( message );
+		}
+		else if ( json.type == 'registerRemoteControl' ) {
+			console.log( 'registered a remote control' );
+			this.remoteControl = true;
+			this.send( message );
+
+			// temporary solution for auto-assigning remote #'s and making them active
+			// first find the next available slot
+			var remoteNum;
+			var remote3D = false;
+			var remote2D = false;
+			for ( var i=0; i<remotes.length; i++ ) {
+				if ( remotes[i] == undefined && remoteNum == undefined )
+					remoteNum = i+1;
+				if ( remotes[i] != undefined && remotes[i].remote3D )
+					remote3D = true;
+				if ( remotes[i] != undefined && remotes[i].remote2D )
+					remote2D = true;
+			}
+
+			console.log( 'remote3D: ' + remote3D );
+			console.log( 'remote2D: ' + remote2D );
+			setRemoteNum( this, remoteNum );
+			this.send(JSON.stringify({
+				type: 'setRemoteNum',
+				num: remoteNum
+			}));
+			// if there is not active 3D remote, activate this one
+			if ( !remote3D ) {
+				setRemote3D( this );
+				sendRemoteStatuses();
+			}
+			else if ( !remote2D ) {
+				setRemote2D( this );
+				sendRemoteStatuses();
+			}
+			// next make it active
+		}
+		else if ( json.type == 'registerServerControl' ) {
+			console.log( 'registered a server control' );
+			json.oscAddress = oscAddress;
+			json.oscPort = oscPort;
+			json.heartbeat = heartbeat;
+			json.touchInterval = touchInterval;
+			json.autoSequence = autoSequence;
+			this.serverControl = true;
+			this.send( JSON.stringify(json) );
+			sendRemoteStatuses();
+		}
+		else if ( json.type == 'setHeartbeat' ) {
+			heartbeat = json.heartbeat;
+			saveSettings();
+			this.send( message );
+		}
+		else if ( json.type == 'setAutoSequence' ) {
+			autoSequence = json.autoSequence;
+			saveSettings();
+			this.send( message );
+		}
+		else if ( json.type == 'setTouchInterval' ) {
+			// validate the touch interval
+			var regex = /[0-9]|\./;
+			if ( regex.test( json.touchInterval ) )
+				touchInterval = json.touchInterval;
+			else
+				console.log ('invalid touch interval' );
+			json.touchInterval = touchInterval;
+			saveSettings();
+			this.send( JSON.stringify( json ) );
+		}
+		else if ( json.type == 'setOscInfo' ) {
+			if ( validateIpAndPort( json.oscInfo ) ) {
+				console.log( 'valid osc info' );
+				var parts = json.oscInfo.split( ':' );
+				oscAddress = parts[0];
+				oscPort = parts[1];
+				saveSettings();
+			}
+			else
+				console.log( 'invalid' );
+			json.oscInfo = oscAddress + ':' + oscPort;
+			this.send( JSON.stringify( json ) );
+		}
+		else if ( json.type == 'setRemote3D' ) {
+			setRemote3D( remotes[json.num-1] );
+			sendRemoteStatuses();
+		}
+		else if ( json.type == 'setRemote2D' ) {
+			setRemote2D( remotes[json.num-1] );
+			sendRemoteStatuses();
+		}
+		else if ( json.type == 'showSettings' ) {
+			if ( remotes[json.num-1] != undefined ) {
+				remotes[json.num-1].send(JSON.stringify({
+					type: 'showSettings'
+				}));
+			}
+		}
+		else if ( json.type == 'startCountdown' ) {
+			if ( remotes[json.num-1] != undefined ) {
+				remotes[json.num-1].send(JSON.stringify({
+					type: 'startCountdown',
+					length: turnLength
+				}));
+			}
+		}
+		else if ( json.type == 'activateRemotes' ) {
+			var remote3DIndex = json.remote3D - 1;
+			var remote2DIndex = json.remote2D - 1;
+
+			activateRemotes( remote3DIndex, remote2DIndex );
+		}
+		else if ( json.type == 'reloadRemotes' ) {
+
+			clearTimeout( turnTickIntervalId );
+
+			remotes.forEach(function(r){
+				if ( r && r.readyState != WebSocket.OPEN )
+					return;
+				r.send(JSON.stringify({
+					type: 'reload'
+				}));
+			});
+		}
+		else if ( json.type == 'effectChosen' ) {
+			console.log( 'remote ' + (remotes.indexOf(this)+1) + ' chose ' + json.name + ' at index ' + json.index );
+			this.effectIndex = json.index;
+		}
+	}
 
 	function countdownTick() {
 		turnTicks++;
@@ -283,12 +286,14 @@ module.exports = function( params ) {
 			remotes[remote3DIndex].send(JSON.stringify({
 				type: 'activate'
 			}));
+			sendOscEffectChange( '/effect3D', remotes[remote3DIndex].effectIndex );
 		}
 		if ( remotes[remote2DIndex] ) {
 			setRemote2D( remotes[remote2DIndex] );
 			remotes[remote2DIndex].send(JSON.stringify({
 				type: 'activate'
 			}));
+			sendOscEffectChange( '/effect2D', remotes[remote2DIndex].effectIndex );
 		}
 
 		turnTicks = 0;
@@ -403,6 +408,16 @@ module.exports = function( params ) {
 	function validateNum(input, min, max) {
 	    var num = +input;
 	    return num >= min && num <= max && input === num.toString();
+	}
+
+	function sendOscEffectChange( address, index ) {
+		var buf = osc.toBuffer({
+			address: address,
+			args: [
+				index
+			]
+		});
+		udp.send( buf, 0, buf.length, (address=='/effect3D'?oscPort:parseInt(oscPort)+1), oscAddress );
 	}
 
 	function sendOscTouch( address, phase, index, x, y, w, h ) {

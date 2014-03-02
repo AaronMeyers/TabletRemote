@@ -14,6 +14,8 @@ var caveImg;
 var width, height;
 var menu;
 var welcomeTimeout;
+var chosenEffectName;
+var chosenEffectIndex;
 
 $(document).on( 'ready', function() {
 
@@ -144,6 +146,7 @@ $(document).on( 'ready', function() {
 	function onSocketMessage( message ) {
 
 		var json = JSON.parse( message.data );
+		console.log( 'receved socket message: ' + json.type );
 
 		// console.log( 'received a socket message of type ' + json.type );
 
@@ -245,7 +248,7 @@ $(document).on( 'ready', function() {
 		// bring out the countdown
 		// countdown.slideIn();
 		$('#welcome').fadeIn();
-		$('#welcome').on( 'click', killWelcome );
+		$('#welcome').on( 'touchstart', killWelcome );
 		welcomeTimeout = setTimeout( killWelcome, 1000 * json.welcomeLength );
 		countdown.begin( json.countdownLength );
 		// bring out the menu
@@ -258,7 +261,7 @@ $(document).on( 'ready', function() {
 		clearTimeout( welcomeTimeout );
 
 		$('#welcome')
-		.off( 'click' )
+		.off( 'touchstart' )
 		.fadeOut();
 
 		countdown.slideIn();
@@ -267,7 +270,7 @@ $(document).on( 'ready', function() {
 
 	function killChosen() {
 		$('#effectChosen')
-		.off( 'click' )
+		.off( 'touchstart' )
 		.fadeOut();
 
 		countdown.slideIn();
@@ -275,13 +278,20 @@ $(document).on( 'ready', function() {
 	}
 
 	function effectChosen( menuBox ) {
-		console.log( 'effectChosen: ' + menuBox.attr( 'effect-name' ) );
+
+		chosenEffectName = menuBox.attr( 'effect-name' );
+		chosenEffectIndex = menuBox.attr( 'index' );
+		console.log( 'effectChosen: ' + menuBox.attr( 'effect-name' ) + ' at index ' + menuBox.attr( 'index' ) );
 		menu.close();
 		countdown.slideOut();
 		$('#chosenEffectName').html( menuBox.attr( 'effect-name' ) );
-		$('#effectChosen').on( 'click', killChosen );
+		$('#effectChosen').on( 'touchstart', killChosen );
 		$('#effectChosen').fadeIn();
-
+		sendSocketMessage(JSON.stringify({
+			type: 'effectChosen',
+			name: chosenEffectName,
+			index: chosenEffectIndex
+		}));
 	}
 
 	function onResize( e ) {
@@ -301,6 +311,7 @@ $(document).on( 'ready', function() {
 
 	function sendSocketMessage( jsonString ) {
 		if ( socket.readyState == WebSocket.OPEN ) {
+			console.log( 'sending socket message: ' + JSON.parse(jsonString).type );
 			socket.send( jsonString );
 		}
 		else {
