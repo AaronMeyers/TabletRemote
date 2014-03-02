@@ -13,6 +13,7 @@ var fingerImg;
 var caveImg;
 var width, height;
 var menu;
+var welcomeTimeout;
 
 $(document).on( 'ready', function() {
 
@@ -43,11 +44,36 @@ $(document).on( 'ready', function() {
 		e.preventDefault();
 	});
 
+	$(document).on( 'keydown', function( e ) {
+		var key = String.fromCharCode( e.keyCode );
+		if ( key == 'O' ) {
+			menu.open();
+		}
+		else if ( key == 'C' ) {
+			menu.close();
+		}
+		else if ( key == 'A' ) {
+			activate();
+		}
+		else if ( key == 'D' ) {
+			deactivate({
+				countdownLength: 60,
+				welcomeLength: 15,
+			});
+		}
+	});
+
 
 	$(window).on( 'resize', onResize );
 	onResize();
 
 	function loop() {
+
+		if ( !isActive ) {
+			requestAnimationFrame( loop );
+			return;
+		}
+		// console.log( 'loop' );
 		var fingerctx = fingerCanvas.getContext( "2d" );
 		var ctx = canvas.getContext( "2d" );
 
@@ -77,6 +103,7 @@ $(document).on( 'ready', function() {
 		particleSystem.update( ctx );
 		requestAnimationFrame( loop );
 	}
+
 
 	function initWebSocket() {
 		var serverAddress = location.host.split( ":" )[0];
@@ -129,14 +156,14 @@ $(document).on( 'ready', function() {
 			if ( remoteNum == 1 || remoteNum == 2 ) {
 				// menu.show();
 				menu.kill();
-				menu = new Menu();
+				menu = new Menu({boxTouchCallback:effectChosen});
 				menu.init( effectInfo3D );
 				menu.close(true);
 				// menu.hide(true);
 			}
 			else if ( remoteNum == 3 || remoteNum == 4 ) {
 				menu.kill();
-				menu = new Menu();
+				menu = new Menu({boxTouchCallback:effectChosen});
 				menu.init( effectInfo2D );
 				menu.close(true);
 				// menu.hide(true);
@@ -207,7 +234,8 @@ $(document).on( 'ready', function() {
 		// $('#canvas').fadeOut(1000);
 		$('#canvas').css({
 			'-webkit-filter': 'brightness(0%)',
-			'-webkit-transition': '-webkit-filter 1s linear 1s'
+			// '-webkit-transition': '-webkit-filter 1s linear 1s'
+			'-webkit-transition': '-webkit-filter .5s'
 		})
 		.on( 'webkitTransitionEnd', function(e) {
 			$(this)
@@ -215,11 +243,45 @@ $(document).on( 'ready', function() {
 			.css({visibility:'hidden'});
 		});
 		// bring out the countdown
-		countdown.slideIn();
+		// countdown.slideIn();
+		$('#welcome').fadeIn();
+		$('#welcome').on( 'click', killWelcome );
+		welcomeTimeout = setTimeout( killWelcome, 1000 * json.welcomeLength );
 		countdown.begin( json.countdownLength );
 		// bring out the menu
-		menu.show();
+		// menu.show();
 		isActive = false;
+	}
+
+	function killWelcome() {
+		console.log( 'kill welcome' );
+		clearTimeout( welcomeTimeout );
+
+		$('#welcome')
+		.off( 'click' )
+		.fadeOut();
+
+		countdown.slideIn();
+		menu.open();
+	}
+
+	function killChosen() {
+		$('#effectChosen')
+		.off( 'click' )
+		.fadeOut();
+
+		countdown.slideIn();
+		menu.open();
+	}
+
+	function effectChosen( menuBox ) {
+		console.log( 'effectChosen: ' + menuBox.attr( 'effect-name' ) );
+		menu.close();
+		countdown.slideOut();
+		$('#chosenEffectName').html( menuBox.attr( 'effect-name' ) );
+		$('#effectChosen').on( 'click', killChosen );
+		$('#effectChosen').fadeIn();
+
 	}
 
 	function onResize( e ) {

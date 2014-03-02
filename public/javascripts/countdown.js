@@ -20,7 +20,7 @@ Countdown.prototype.slideIn = function() {
 	$('#countdown').css({
 		visibility: 'visible',
 		right: 0,
-		'-webkit-transition': 'right 1s ease-in-out'
+		'-webkit-transition': 'right .3s ease-in-out'
 	});
 	$('#countdown').on( 'webkitTransitionEnd', function(e){
 		$(this).off( 'webkitTransitionEnd' );
@@ -31,7 +31,7 @@ Countdown.prototype.slideIn = function() {
 Countdown.prototype.slideOut = function() {
 	$('#countdown').css({
 		right: -this.width,
-		'-webkit-transition': 'right 1s ease-in-out'
+		'-webkit-transition': 'right .3s ease-in-out'
 	});
 	$('#countdown').on( 'webkitTransitionEnd', function(e){
 		$(this).off( 'webkitTransitionEnd' );
@@ -66,6 +66,7 @@ Countdown.prototype.tick = function() {
 	count--;
 
 	$('#welcome-seconds').html( count + (count==1?' second':' seconds') );
+	$('#chosen-seconds').html( count + (count==1?' second':' seconds') );
 	$('.countdownSeconds').html( (count<10?'0':'') +count );
 
 	if ( count == 0 ) {

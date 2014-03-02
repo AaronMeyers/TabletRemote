@@ -18,14 +18,19 @@ canvas {
 }
 
 #welcome {
-	visibility: hidden;
+}
+
+.full-screen-text {
+	display: none;
 	position: absolute;
 	z-index: 100;
-	font-size: 75px;
-	margin: 50px 30px;
+	font-size: 64px;
+	padding: 50px 30px;
 	line-height: 70px;
 	font-weight: bolder;
 	color: white;
+	width: 100%;
+	height: 100%;
 }
 
 #cave {
@@ -161,7 +166,7 @@ canvas {
 	right: 0px;
 	top: 0px;
 	text-align: right;
-	font-size: 40px;
+	font-size: 30px;
 	font-weight: bold;
 	padding-right: 20px;
 	width: 400px;
@@ -178,9 +183,9 @@ canvas {
 }
 
 .countdownTimer {
-	font-size: 200px;
+	font-size: 170px;
 	font-weight: bold;
-	line-height: 170px;
+	line-height: 140px;
 	/*position: absolute;
 	right: 0px;*/
 }

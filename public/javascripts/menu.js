@@ -1,85 +1,85 @@
 var effectInfo2D = [
 	{
-		name: '2D effect 1',
+		name: '2D Effect 1',
 		img: '01.gif'
 	},
 	{
-		name: '2D effect 2',
+		name: '2D Effect 2',
 		img: '02.gif'
 	},
 	{
-		name: '2D effect 3',
+		name: '2D Effect 3',
 		img: '03.gif'
 	},
 	{
-		name: '2D effect 4',
+		name: '2D Effect 4',
 		img: '04.gif'
 	},
 	{
-		name: '2D effect 5',
+		name: '2D Effect 5',
 		img: '05.gif'
 	},
 	{
-		name: '2D effect 6',
+		name: '2D Effect 6',
 		img: '06.gif'
 	},
 	{
-		name: '2D effect 7',
+		name: '2D Effect 7',
 		img: '07.gif'
 	},
 	{
-		name: '2D effect 8',
+		name: '2D Effect 8',
 		img: '07.gif'
 	},
 	{
-		name: '2D effect 9',
+		name: '2D Effect 9',
 		img: '07.gif'
 	},
 	{
-		name: '2D effect 10',
+		name: '2D Effect 10',
 		img: '07.gif'
 	},
 ];
 
 var effectInfo3D = [
 	{
-		name: '3D effect 1',
+		name: '3D Effect 1',
 		img: '01.gif'
 	},
 	{
-		name: '3D effect 2',
+		name: '3D Effect 2',
 		img: '02.gif'
 	},
 	{
-		name: '3D effect 3',
+		name: '3D Effect 3',
 		img: '03.gif'
 	},
 	{
-		name: '3D effect 4',
+		name: '3D Effect 4',
 		img: '04.gif'
 	},
 	{
-		name: '3D effect 5',
+		name: '3D Effect 5',
 		img: '05.gif'
 	},
 	{
-		name: '3D effect 6',
+		name: '3D Effect 6',
 		img: '06.gif'
 	},
 	{
-		name: '3D effect 7',
+		name: '3D Effect 7',
 		img: '07.gif'
 	},
 	{
-		name: '3D effect 8',
+		name: '3D Effect 8',
 		img: '07.gif'
 	},
 	{
-		name: '3D effect 9',
+		name: '3D Effect 9',
 		img: '07.gif'
 	},
 	{
-		name: '3D effect 10',
+		name: '3D Effect 10',
 		img: '07.gif'
 	},
 ];
@@ -90,7 +90,8 @@ function Menu( params ) {
 	var params = (typeof params === "undefined" ) ? {} : params;
 	var itemWidth = (typeof params.itemWidth === "undefined") ? 350 : params.itemWidth;
 	var itemHeight = (typeof params.itemHeight === "undefined") ? 150 : params.itemHeight;
-	var gui = (typeof params.gui === "undefined") ? undefined : gui;
+	var gui = (typeof params.gui === "undefined") ? undefined : params.gui;
+	var boxTouchCallback = (typeof params.boxTouchCallback === "undefined") ? undefined : params.boxTouchCallback;
 
 	this.name = "menu" + menuInstance++;
 	this.retracted = false;
@@ -103,6 +104,7 @@ function Menu( params ) {
 	this.boxWidth = 250;
 	this.boxHeight = 250;
 	this.boxMargin = 30;
+	this.boxTouchCallback = boxTouchCallback;
 
 	this.minItemX = 0;
 	this.maxItemX = 250;
@@ -174,6 +176,8 @@ Menu.prototype.init = function( items, startClosed ) {
 		var box = $('#clonable-menu-box').clone();
 		box.attr( 'id', 'box'+i );
 		box.attr( 'menu', this.name );
+		box.attr( 'index', i );
+		box.attr( 'effect-name', items[i].name );
 		box.css({
 			'visibility': 'visible',
 			'margin-top': -this.boxHeight/2,
@@ -260,6 +264,8 @@ Menu.prototype.init = function( items, startClosed ) {
 		e.preventDefault();
 		e.stopPropagation();
 		// menu.close();
+		if ( menu.boxTouchCallback )
+			menu.boxTouchCallback($(this));
 	});
 
 	$('.menu-item').on( 'touchstart', function(e) {
@@ -377,7 +383,7 @@ Menu.prototype.scroll = function() {
 		var z = (rotation+90) % 360;
 		var extend = this.getXPosForRotation( rotation );
 		box.css( 'top', boxY );
-		box.gem.jitter( 2.0 );
+		// box.gem.jitter( 2.0 );
 		// item.find( '.menu-item-debug' ).html( 'rotation: ' + rotation.toFixed(1) + '<br/>width: ' + theWidth.toFixed(1) );
 		var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
 		// if ( i==0 )
@@ -424,6 +430,13 @@ Menu.prototype.open = function() {
 				'-webkit-transition': transition
 			});
 		}
+		else {
+			box.hide();
+			box.css({
+				'-webkit-transform': 'scale3d(1,1,1)',
+				'-webkit-transform': ''
+			})
+		}
 
 		if ( box.is(':visible') ) {
 			box.css({
@@ -449,6 +462,7 @@ Menu.prototype.opened = function() {
 	$('.menu-item').css({
 		'-webkit-transition': ''
 	});
+	$('#menu-bg').css( 'pointer-events', 'auto' );
 }
 
 Menu.prototype.closed = function() {
@@ -495,7 +509,9 @@ Menu.prototype.close = function( immediate ) {
 		'-webkit-transition': (immediate?undefined:'right .3s ease-in-out')
 	});
 
-	setTimeout( this.closed.bind(this), 1000 );
+	$('#menu-bg').css( 'pointer-events', 'none' );
+
+	setTimeout( this.closed.bind(this), (immediate?0:1000) );
 	menu.transitioning = true;
 }
 
