@@ -34,6 +34,15 @@ canvas {
 #welcome {
 }
 
+#effect-instruction {
+	display: none;
+	position: absolute;
+	font-size: 32px;
+	color: white;
+	left: 20px;
+	top: 600px;
+}
+
 .full-screen-text {
 	display: none;
 	position: absolute;

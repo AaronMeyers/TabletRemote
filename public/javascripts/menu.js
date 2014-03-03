@@ -1,86 +1,106 @@
 var effectInfo2D = [
 	{
 		name: '2D Effect 1',
-		img: '01.gif'
+		img: '01.gif',
+		instruction: 'Do something... 1'
 	},
 	{
 		name: '2D Effect 2',
-		img: '02.gif'
+		img: '02.gif',
+		instruction: 'Do something... 2'
 	},
 	{
 		name: '2D Effect 3',
-		img: '03.gif'
+		img: '03.gif',
+		instruction: 'Do something... 3'
 	},
 	{
 		name: '2D Effect 4',
-		img: '04.gif'
+		img: '04.gif',
+		instruction: 'Do something... 4'
 	},
 	{
 		name: '2D Effect 5',
-		img: '05.gif'
+		img: '05.gif',
+		instruction: 'Do something... 5'
 	},
 	{
 		name: '2D Effect 6',
-		img: '06.gif'
+		img: '06.gif',
+		instruction: 'Do something... 6'
 	},
 	{
 		name: '2D Effect 7',
-		img: '07.gif'
+		img: '07.gif',
+		instruction: 'Do something... 7'
 	},
 	{
 		name: '2D Effect 8',
-		img: '07.gif'
+		img: '07.gif',
+		instruction: 'Do something... 8'
 	},
 	{
 		name: '2D Effect 9',
-		img: '07.gif'
+		img: '07.gif',
+		instruction: 'Do something... 9'
 	},
 	{
 		name: '2D Effect 10',
-		img: '07.gif'
+		img: '07.gif',
+		instruction: 'Do something... 10'
 	},
 ];
 
 var effectInfo3D = [
 	{
 		name: '3D Effect 1',
-		img: '01.gif'
+		img: '01.gif',
+		instruction: 'Do something... 1'
 	},
 	{
 		name: '3D Effect 2',
-		img: '02.gif'
+		img: '02.gif',
+		instruction: 'Do something... 2'
 	},
 	{
 		name: '3D Effect 3',
-		img: '03.gif'
+		img: '03.gif',
+		instruction: 'Do something... 3'
 	},
 	{
 		name: '3D Effect 4',
-		img: '04.gif'
+		img: '04.gif',
+		instruction: 'Do something... 4'
 	},
 	{
 		name: '3D Effect 5',
-		img: '05.gif'
+		img: '05.gif',
+		instruction: 'Do something... 5'
 	},
 	{
 		name: '3D Effect 6',
-		img: '06.gif'
+		img: '06.gif',
+		instruction: 'Do something... 6'
 	},
 	{
 		name: '3D Effect 7',
-		img: '07.gif'
+		img: '07.gif',
+		instruction: 'Do something... 7'
 	},
 	{
 		name: '3D Effect 8',
-		img: '07.gif'
+		img: '07.gif',
+		instruction: 'Do something... 8'
 	},
 	{
 		name: '3D Effect 9',
-		img: '07.gif'
+		img: '07.gif',
+		instruction: 'Do something... 9'
 	},
 	{
 		name: '3D Effect 10',
-		img: '07.gif'
+		img: '07.gif',
+		instruction: 'Do something... 10'
 	},
 ];
 

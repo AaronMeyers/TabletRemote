@@ -287,14 +287,16 @@ module.exports = function( params ) {
 		if ( remotes[remote3DIndex] ) {
 			setRemote3D( remotes[remote3DIndex] );
 			remotes[remote3DIndex].send(JSON.stringify({
-				type: 'activate'
+				type: 'activate',
+				effectType: '3D'
 			}));
 			sendOscEffectChange( '/effect3D', remotes[remote3DIndex].effectIndex );
 		}
 		if ( remotes[remote2DIndex] ) {
 			setRemote2D( remotes[remote2DIndex] );
 			remotes[remote2DIndex].send(JSON.stringify({
-				type: 'activate'
+				type: 'activate',
+				effectType: '2D'
 			}));
 			sendOscEffectChange( '/effect2D', remotes[remote2DIndex].effectIndex );
 		}
