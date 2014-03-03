@@ -3,5 +3,5 @@
     "oscPort": "12000",
     "heartbeat": false,
     "touchInterval": "20",
-    "autoSequence": true
+    "autoSequence": false
 }

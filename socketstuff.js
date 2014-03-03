@@ -3,6 +3,7 @@ module.exports = function( params ) {
 	var stuff = {};
 	// create websocket stuff
 	var fs = require('fs');
+	// var DMX = require('dmx');
 
 	var WebSocket = require('ws');
 	// var WebSocketServer = require('ws').Server
@@ -16,8 +17,9 @@ module.exports = function( params ) {
 	var sockets = {};
 	var socketCounter = 0;
 	var remotes = new Array( 4 );
-	var turnLength = 60;
+	var turnLength = 90;
 	var welcomeLength = 15;
+	var leaveLength = 15;
 	var turnTicks = 0;
 	var autoSequence = true;
 	var turnTickIntervalId;
@@ -94,7 +96,7 @@ module.exports = function( params ) {
 
 		var json = JSON.parse( message );
 
-		console.log( 'received socket message: ' + json.type );
+		// console.log( 'received socket message: ' + json.type );
 
 		if ( json.type == 'touchCoord' ) {
 
@@ -106,7 +108,7 @@ module.exports = function( params ) {
 			}
 		}
 		else if ( json.type == 'setRemoteNum' ) {
-			setRemoteNum( ws, json.num );
+			setRemoteNum( this, json.num );
 			this.send( message );
 		}
 		else if ( json.type == 'registerRemoteControl' ) {
@@ -269,7 +271,8 @@ module.exports = function( params ) {
 		var deactivationMsg = JSON.stringify({
 				type: 'deactivate',
 				countdownLength: turnLength,
-				welcomeLength: welcomeLength
+				welcomeLength: welcomeLength,
+				leaveLength: leaveLength
 		});
 
 		// send the old remotes deactivation messages
@@ -417,22 +420,29 @@ module.exports = function( params ) {
 				index
 			]
 		});
-		udp.send( buf, 0, buf.length, (address=='/effect3D'?oscPort:parseInt(oscPort)+1), oscAddress );
+		var thePort = (address=='/effect3D'?parseInt(oscPort):parseInt(oscPort)+10) + 9;
+
+		udp.send( buf, 0, buf.length, thePort, oscAddress );
 	}
 
 	function sendOscTouch( address, phase, index, x, y, w, h ) {
+		if ( index > 8 ) // ignoring fingers 9 and 10
+			return;
+
 		var buf = osc.toBuffer({
 			address: address,
 			args: [
 				phase,
-				index,
 				x,
 				y,
 				w,
 				h
 			]
 		});
-		udp.send( buf, 0, buf.length, (address=='/touch3D'?oscPort:parseInt(oscPort)+1), oscAddress );
+		var thePort = (address=='/touch3D'?parseInt(oscPort):parseInt(oscPort)+10) + index;
+		console.log( 'the port: ' + thePort + ' the address ' + address );
+
+		udp.send( buf, 0, buf.length, thePort, oscAddress );
 	}
 
 	function sendOscHeartbeat() {

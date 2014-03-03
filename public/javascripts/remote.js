@@ -15,9 +15,11 @@ var caveImg;
 var width, height;
 var menu;
 var welcomeTimeout;
+var goAwayTimeout;
 var chosenEffectName;
 var chosenEffectIndex;
 var imgWidth, imgHeight;
+var welcomeLength
 
 $(document).on( 'ready', function() {
 
@@ -69,8 +71,9 @@ $(document).on( 'ready', function() {
 		}
 		else if ( key == 'D' ) {
 			deactivate({
-				countdownLength: 60,
+				countdownLength: 90,
 				welcomeLength: 15,
+				leaveLength: 15,
 			});
 		}
 	});
@@ -288,18 +291,35 @@ $(document).on( 'ready', function() {
 		$('#big-countdown').hide();
 		menu.close();
 		countdown.slideOut();
-
-		$('#welcome').fadeIn();
-		$('#welcome').on( 'touchstart', killWelcome );
-		welcomeTimeout = setTimeout( killWelcome, 1000 * json.welcomeLength );
 		countdown.begin( json.countdownLength );
+		welcomeLength = json.welcomeLength;
+
+		$('#goaway').fadeIn();
+		$('#goaway').on( 'touchstart', killGoAway );
+		goAwayTimeout = setTimeout( killGoAway, 1000 * json.leaveLength );
+		
 		// bring out the menu
 		// menu.show();
 		isActive = false;
 	}
 
+	function doWelcome() {
+
+		$('#welcome').fadeIn();
+		$('#welcome').on( 'touchstart', killWelcome );
+		welcomeTimeout = setTimeout( killWelcome, 1000 * welcomeLength );
+	}
+
+	function killGoAway() {
+		clearTimeout( goAwayTimeout );
+		$('#goaway')
+		.off( 'touchstart' )
+		.fadeOut();
+
+		doWelcome();
+	}
+
 	function killWelcome() {
-		console.log( 'kill welcome' );
 		clearTimeout( welcomeTimeout );
 
 		$('#welcome')
@@ -356,7 +376,7 @@ $(document).on( 'ready', function() {
 
 	function sendSocketMessage( jsonString ) {
 		if ( socket.readyState == WebSocket.OPEN ) {
-			console.log( 'sending socket message: ' + JSON.parse(jsonString).type );
+			// console.log( 'sending socket message: ' + JSON.parse(jsonString).type );
 			socket.send( jsonString );
 		}
 		else {

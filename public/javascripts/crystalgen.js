@@ -85,7 +85,7 @@ Gem.prototype.draw = function( jitterAmt ) {
 	ctx.lineJoin = 'bevel';
 	ctx.clearRect( 0, 0, this.width, this.height );
 	ctx.strokeStyle = 'white';
-	ctx.lineWidth = 3;
+	ctx.lineWidth = 2;
 
 	// make the inner square
 	// ctx.beginPath();
@@ -196,7 +196,7 @@ Crystal.prototype.generate = function() {
 	ctx.clearRect( 0, 0, this.width, this.height );
 	ctx.strokeStyle = 'white';
 
-	ctx.lineWidth = 3;
+	ctx.lineWidth = 2;
 	ctx.lineJoin = 'bevel';
 
 	var tip = this.tip;
