@@ -20,6 +20,7 @@ var chosenEffectName;
 var chosenEffectIndex = 0;
 var imgWidth, imgHeight;
 var welcomeLength;
+var deviceName;
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -29,6 +30,8 @@ function getParameterByName(name) {
 }
 
 $(document).on( 'ready', function() {
+
+	deviceName = getParameterByName( 'deviceName' );
 
 	canvas = $('#canvas')[0];
 	fingerCanvas = $('#fingercanvas')[0];
@@ -159,7 +162,7 @@ $(document).on( 'ready', function() {
 		socket.onopen = function() {
 			sendSocketMessage( JSON.stringify({
 				type: 	'registerRemoteControl',
-				name: getParameterByName( 'deviceName' )
+				name: deviceName
 			}));
 		};
 		socket.onclose = function( e ) {

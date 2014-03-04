@@ -90,6 +90,7 @@ module.exports = function( params ) {
 		ws.remote3D = false;
 		ws.remote2D = false;
 		ws.effectIndex = 0;
+		ws.deviceName = '';
 		sockets[id] = ws;
 		// console.log( 'connection opened to ' + ws.id + ' at ' + ws.url );
 		console.log( 'made a connection' );
@@ -130,6 +131,7 @@ module.exports = function( params ) {
 		}
 		else if ( json.type == 'registerRemoteControl' ) {
 			console.log( 'registered a remote control: ' + json.name );
+			this.deviceName = json.name;
 			this.remoteControl = true;
 			this.send( message );
 
@@ -147,19 +149,21 @@ module.exports = function( params ) {
 					remote2D = true;
 			}
 
-			console.log( 'remote3D: ' + remote3D );
-			console.log( 'remote2D: ' + remote2D );
+			if ( json.name.split('aaRemote').length > 1 ) {
+				remoteNum = parseInt(json.name.split('aaRemote')[1]);
+			}
+
 			setRemoteNum( this, remoteNum );
 			this.send(JSON.stringify({
 				type: 'setRemoteNum',
 				num: remoteNum
 			}));
 			// if there is not active 3D remote, activate this one
-			if ( !remote3D ) {
+			if ( !remote3D && (remoteNum == 1 || remoteNum == 2 ) ) {
 				setRemote3D( this );
 				sendRemoteStatuses();
 			}
-			else if ( !remote2D ) {
+			else if ( !remote2D && (remoteNum == 3 || remoteNum == 4 ) ) {
 				setRemote2D( this );
 				sendRemoteStatuses();
 			}
@@ -360,7 +364,8 @@ module.exports = function( params ) {
 				address: exists?remotes[i].address:undefined,
 				remote3D: exists?remotes[i].remote3D:false,
 				remote2D: exists?remotes[i].remote2D:false,
-				ip: exists?remotes[i]._socket.remoteAddress:'0.0.0.0'
+				ip: exists?remotes[i]._socket.remoteAddress:'0.0.0.0',
+				deviceName: exists?remotes[i].deviceName:''
 			});
 		}
 
