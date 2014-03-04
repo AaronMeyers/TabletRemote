@@ -3,7 +3,17 @@ module.exports = function( params ) {
 	var stuff = {};
 	// create websocket stuff
 	var fs = require('fs');
-	// var DMX = require('dmx');
+	var DMX = require('dmx');
+	var dmx = new DMX();
+
+	var universe = dmx.addUniverse('demo', 'enttec-usb-dmx-pro', 0);
+	// var universe = dmx.addUniverse('demo', 'null');
+
+	universe.update({0: 1, 1: 0});
+	universe.update({15: 1, 16: 255});
+	universe.update({1: 255, 3: 120, 4: 230, 5: 30, 6: 110, 7: 255, 8: 10, 9: 255, 10: 255, 11: 0});
+
+	console.log( dmx );
 
 	var WebSocket = require('ws');
 	// var WebSocketServer = require('ws').Server
