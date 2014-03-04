@@ -11,29 +11,53 @@
 		<form id="settingsForm" class="form-horizontal">
 			<div class="form-group">
 
-
-				<label for="touchIntervalInput" class="col-xs-3 control-label">Touch Interval (ms)</label>
-				<div class="col-xs-9" style="padding-bottom: 5px;">
-					<div class="input-group">
-						<input id="touchIntervalInput" type="number" class="form-control" placeholder="Touch Interval (ms)">
-						<span class="input-group-btn">
-								<button id="touchIntervalButton" class="btn btn-default" type="button">SET</button>
-						</span>
+				<div class="row" style="margin-right:0px;">
+					<label for="touchIntervalInput" class="col-xs-2 control-label">Touch Interval (ms)</label>
+					<div class="col-xs-10" style="padding-bottom: 5px;">
+						<div class="input-group">
+							<input id="touchIntervalInput" type="number" class="form-control" placeholder="Touch Interval (ms)">
+							<span class="input-group-btn">
+									<button id="touchIntervalButton" class="btn btn-default" type="button">SET</button>
+							</span>
+						</div>
 					</div>
 				</div>
 
-				<label for="oscAddressInput" class="col-xs-3 control-label">OSC Address</label>
-				<div class="col-xs-9">
-					<div class="input-group">
-						<input id="oscAddressInput" type="text" class="form-control" placeholder="OSC Address">
-						<span class="input-group-btn">
-							<button id="oscAddressButton" class="btn btn-default" type="button">SET</button>
-						</span>
-					</div><!-- /input-group -->
+				<div class="row" style="margin-right:0px;">
+					<label for="turnLengthInput" class="col-xs-2 control-label">Turn Length (s)</label>
+					<div class="col-xs-2" style="padding-bottom: 5px;">
+						<div class="input-group">
+							<input id="turnLengthInput" messageType="setTurnLength" type="number" class="form-control" placeholder="Turn Length (s)">
+						</div>
+					</div>
+					<label for="welcomeLengthInput" class="col-xs-2 control-label">Welcome Length (s)</label>
+					<div class="col-xs-2" style="padding-bottom: 5px;">
+						<div class="input-group">
+							<input id="welcomeLengthInput" messageType="setWelcomeLength" type="number" class="form-control" placeholder="Welcome Length (s)">
+						</div>
+					</div>
+					<label for="exitLengthInput" class="col-xs-2 control-label">Exit Length (s)</label>
+					<div class="col-xs-2" style="padding-bottom: 5px;">
+						<div class="input-group">
+							<input id="exitLengthInput" messageType="setExitLength" type="number" class="form-control" placeholder="Exit Length (s)">
+						</div>
+					</div>
 				</div>
-				<br/>
 
-				<label for="heartbeatToggle" class="col-xs-3 control-label">OSC Heartbeat</label>
+
+				<div class="row" style="margin-right:0px;">
+					<label for="oscAddressInput" class="col-xs-2 control-label">OSC Address</label>
+					<div class="col-xs-10">
+						<div class="input-group">
+							<input id="oscAddressInput" type="text" class="form-control" placeholder="OSC Address">
+							<span class="input-group-btn">
+								<button id="oscAddressButton" class="btn btn-default" type="button">SET</button>
+							</span>
+						</div><!-- /input-group -->
+					</div>
+				</div>
+
+				<label for="heartbeatToggle" class="col-xs-2 control-label">OSC Heartbeat</label>
 				<div class="col-xs-1">
 					<input id="heartbeatToggle" type="checkbox" style="vertical-align: -webkit-baseline-middle">
 				</div>

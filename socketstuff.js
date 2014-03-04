@@ -19,7 +19,7 @@ module.exports = function( params ) {
 	var remotes = new Array( 4 );
 	var turnLength = 90;
 	var welcomeLength = 15;
-	var leaveLength = 15;
+	var exitLength = 15;
 	var turnTicks = 0;
 	var autoSequence = true;
 	var turnTickIntervalId;
@@ -46,6 +46,9 @@ module.exports = function( params ) {
 				heartbeat = settings.heartbeat;
 				touchInterval = settings.touchInterval;
 				autoSequence = settings.autoSequence;
+				welcomeLength = settings.welcomeLength;
+				turnLength = settings.turnLength;
+				exitLength = settings.exitLength;
 			}
 		});
 	}
@@ -56,7 +59,10 @@ module.exports = function( params ) {
 			oscPort: oscPort,
 			heartbeat: heartbeat,
 			touchInterval: touchInterval,
-			autoSequence: autoSequence
+			autoSequence: autoSequence,
+			welcomeLength: welcomeLength,
+			turnLength: turnLength,
+			exitLength: exitLength
 		}, null, 4);
 		fs.writeFile( 'settings.json', settings, function(err) {
 			if ( err )
@@ -155,6 +161,9 @@ module.exports = function( params ) {
 			json.heartbeat = heartbeat;
 			json.touchInterval = touchInterval;
 			json.autoSequence = autoSequence;
+			json.welcomeLength = welcomeLength;
+			json.turnLength = turnLength;
+			json.exitLength = exitLength;
 			this.serverControl = true;
 			this.send( JSON.stringify(json) );
 			sendRemoteStatuses();
@@ -179,6 +188,21 @@ module.exports = function( params ) {
 			json.touchInterval = touchInterval;
 			saveSettings();
 			this.send( JSON.stringify( json ) );
+		}
+		else if ( json.type == 'setTurnLength' ) {
+			turnLength = json.value;
+			saveSettings();
+			this.send( JSON.stringify( json ) );
+		}
+		else if ( json.type == 'setWelcomeLength' ) {
+			welcomeLength = json.value;
+			saveSettings();
+			this.send( JSON.stringify( json ) );
+		}
+		else if ( json.type == 'setExitLength' ) {
+			exitLength = json.value;
+			saveSettings();
+			this.send(JSON.stringify(json));
 		}
 		else if ( json.type == 'setOscInfo' ) {
 			if ( validateIpAndPort( json.oscInfo ) ) {
@@ -272,7 +296,7 @@ module.exports = function( params ) {
 				type: 'deactivate',
 				countdownLength: turnLength,
 				welcomeLength: welcomeLength,
-				leaveLength: leaveLength
+				exitLength: exitLength
 		});
 
 		// send the old remotes deactivation messages

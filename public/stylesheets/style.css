@@ -104,6 +104,13 @@ canvas {
 	height: 768px;
 }
 
+#menu-bg-img {
+	pointer-events: none;
+	position: absolute;
+	display: none;
+	-webkit-filter: brightness(30%);
+}
+
 #menu-overlay {
 	position: absolute;
 	background: rgba( 255, 0, 0, .25 );

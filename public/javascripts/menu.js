@@ -466,6 +466,8 @@ Menu.prototype.open = function() {
 			'-webkit-transition': 'right .3s ease-in-out'
 		});
 
+		$('#menu-bg-img').fadeIn();
+
 	}
 	setTimeout(this.opened.bind(this), (maxDelayMillis+transitionMillis) );
 	menu.transitioning = true;
@@ -550,6 +552,11 @@ Menu.prototype.close = function( immediate ) {
 	});
 
 	$('#menu-bg').css( 'pointer-events', 'none' );
+
+	if ( immediate )
+		$('#menu-bg-img').hide();
+	else
+		$('#menu-bg-img').fadeOut();
 
 	console.log( 'max delay millis: ' + maxDelayMillis );
 

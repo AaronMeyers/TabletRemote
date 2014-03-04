@@ -27,23 +27,13 @@ $(document).on( 'ready', function() {
 	}
 	initWebSocket();
 
-	$('#touchIntervalInput').bind( 'enterKey', touchIntervalEntered );
-	$('#touchIntervalInput').keyup( function(e) {
-		if ( e.keyCode == 13 ) {
-			$(this).trigger('enterKey');
-			e.preventDefault();
-		}
-	});
+	$('#touchIntervalInput').bind( 'enterKey', touchIntervalEntered ).keyup( enterKeyCallback );
 	$('#touchIntervalButton').on( 'click', touchIntervalEntered );
 
-	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered );
-	$('#oscAddressInput').keyup(function(e){
-		if ( e.keyCode == 13 ) {
-			$(this).trigger('enterKey');
-			e.preventDefault();
-		}
-	});
-	$('#oscAddressButton').on( 'click', oscInfoEntered );
+	$('#turnLengthInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
+	$('#welcomeLengthInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
+	$('#exitLengthInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
+	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered ).keyup( enterKeyCallback );
 
 	$('#heartbeatToggle').change(function() {
 		console.log( 'heartbeat toggled: ' + $(this).is(':checked') );
@@ -116,13 +106,24 @@ $(document).on( 'ready', function() {
 		return false;
 	});
 
+	function enterKeyCallback( e ) {
+		if ( e.keyCode == 13 ) {
+			$(this).trigger('enterKey');
+			e.preventDefault();
+		}
+	}
+
 	function onSocketMessage( message ) {
 		var json = JSON.parse( message.data );
 		if ( json.type == 'registerServerControl' ) {
+			console.log( 'welcome length: ' + json.welcomeLength );
 			var oscInfo = json.oscAddress + ':' + json.oscPort;
 			$('#oscAddressInput').val( oscInfo );
 			$('#controlPanel').fadeIn();
 			$('#touchIntervalInput').val( json.touchInterval );
+			$('#welcomeLengthInput').val( json.welcomeLength );
+			$('#turnLengthInput').val( json.turnLength );
+			$('#exitLengthInput').val( json.exitLength );
 			$('#heartbeatToggle').prop( 'checked', json.heartbeat?'checked':'' );
 			$('#autoSequenceToggle').prop( 'checked', json.autoSequence?'checked':'' );
 		}
@@ -157,6 +158,15 @@ $(document).on( 'ready', function() {
 			type: 'setTouchInterval',
 			touchInterval: $('#touchIntervalInput').val()
 		}))
+	}
+
+	function valueEntered( e ) {
+		console.log( $(this).attr('messageType') );
+		$(this).blur();
+		sendSocketMessage( JSON.stringify({
+			type: $(this).attr('messageType'),
+			value: $(this).val()
+		}));
 	}
 
 	function oscInfoEntered() {

@@ -73,7 +73,7 @@ $(document).on( 'ready', function() {
 			deactivate({
 				countdownLength: 90,
 				welcomeLength: 15,
-				leaveLength: 15,
+				exitLength: 15,
 			});
 		}
 	});
@@ -296,7 +296,7 @@ $(document).on( 'ready', function() {
 
 		$('#goaway').fadeIn();
 		$('#goaway').on( 'touchstart', killGoAway );
-		goAwayTimeout = setTimeout( killGoAway, 1000 * json.leaveLength );
+		goAwayTimeout = setTimeout( killGoAway, 1000 * json.exitLength );
 		
 		// bring out the menu
 		// menu.show();
