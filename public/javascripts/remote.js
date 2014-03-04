@@ -17,7 +17,7 @@ var menu;
 var welcomeTimeout;
 var goAwayTimeout;
 var chosenEffectName;
-var chosenEffectIndex;
+var chosenEffectIndex = 0;
 var imgWidth, imgHeight;
 var welcomeLength
 
@@ -67,7 +67,7 @@ $(document).on( 'ready', function() {
 			menu.close();
 		}
 		else if ( key == 'A' ) {
-			activate();
+			activate( '3D' );
 		}
 		else if ( key == 'D' ) {
 			deactivate({
@@ -242,7 +242,7 @@ $(document).on( 'ready', function() {
 		}
 		else if ( json.type == 'activate' ) {
 			console.log( 'received activate message' );
-			activate();
+			activate(json.effectType);
 		}
 		else if ( json.type == 'deactivate' ) {
 			console.log( 'received deactivate message' );
@@ -253,7 +253,7 @@ $(document).on( 'ready', function() {
 		}
 	}
 
-	function activate() {
+	function activate(effectType) {
 		// fade in canvas
 		// $('#canvas').fadeIn(1000);
 		$('#canvas').css({visibility: 'visible'});
@@ -264,6 +264,11 @@ $(document).on( 'ready', function() {
 		.on( 'webkitTransitionEnd', function(e) {
 			$(this).off( 'webkitTransitionEnd' );
 		});
+
+		console.log( 'activating -- effect index: ' + chosenEffectIndex + ' type: ' + effectType );
+		var instruction = effectType=='3D'?effectInfo3D[chosenEffectIndex].instruction:effectInfo2D[chosenEffectIndex].instruction;
+		$('#effect-instruction').html(instruction).delay(1000).fadeIn().delay(10000).fadeOut();
+
 		menu.close();
 		countdown.slideOut();
 		$('#welcome').fadeOut();
