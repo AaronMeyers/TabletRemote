@@ -19,7 +19,14 @@ var goAwayTimeout;
 var chosenEffectName;
 var chosenEffectIndex = 0;
 var imgWidth, imgHeight;
-var welcomeLength
+var welcomeLength;
+
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results == null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
 
 $(document).on( 'ready', function() {
 
@@ -151,7 +158,8 @@ $(document).on( 'ready', function() {
 		socket = new WebSocket("ws://" + serverAddress + ":8080");
 		socket.onopen = function() {
 			sendSocketMessage( JSON.stringify({
-				type: 	'registerRemoteControl'
+				type: 	'registerRemoteControl',
+				name: getParameterByName( 'deviceName' )
 			}));
 		};
 		socket.onclose = function( e ) {

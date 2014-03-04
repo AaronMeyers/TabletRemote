@@ -198,6 +198,7 @@ $(document).on( 'ready', function() {
 			$('#remoteStatus'+(i+1)).html( remotes[i].connected?'CONNECTED':'DISCONNECTED' );
 			$('#remoteStatus'+(i+1)).addClass( remotes[i].connected?'label-success':'label-danger' );
 			$('#remoteStatus'+(i+1)).removeClass( remotes[i].connected?'label-danger':'label-success' );
+			$('#remoteAddress'+(i+1)).html( remotes[i].ip );
 			// $('#remoteAddress'+(i+1)).html( 'Address: ' + remotes[i].address );
 
 			if ( remotes[i].connected ) {

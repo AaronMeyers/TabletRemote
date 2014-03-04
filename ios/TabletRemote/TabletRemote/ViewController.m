@@ -58,7 +58,7 @@
     [super viewDidLoad];
     if ( [[NSUserDefaults standardUserDefaults] stringForKey:@"lastAddress"] ) {
         [self.addressTextField setText:[[NSUserDefaults standardUserDefaults] stringForKey:@"lastAddress"]];
-        NSString *urlString = [NSString stringWithFormat:@"http://%@", [self.addressTextField text]];
+        NSString *urlString = [NSString stringWithFormat:@"http://%@?deviceName=%@", [self.addressTextField text], [[UIDevice currentDevice] name]];
         NSURL *url = [NSURL URLWithString:urlString];
         [self.remoteWebView loadRequest:[NSURLRequest requestWithURL:url]];
     }

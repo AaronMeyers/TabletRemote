@@ -9,9 +9,9 @@ module.exports = function( params ) {
 	var universe = dmx.addUniverse('demo', 'enttec-usb-dmx-pro', 0);
 	// var universe = dmx.addUniverse('demo', 'null');
 
-	universe.update({0: 1, 1: 0});
-	universe.update({15: 1, 16: 255});
-	universe.update({1: 255, 3: 120, 4: 230, 5: 30, 6: 110, 7: 255, 8: 10, 9: 255, 10: 255, 11: 0});
+	// universe.update({0: 1, 1: 0});
+	// universe.update({15: 1, 16: 255});
+	// universe.update({1: 255, 3: 120, 4: 230, 5: 30, 6: 110, 7: 255, 8: 10, 9: 255, 10: 255, 11: 0});
 
 	console.log( dmx );
 
@@ -39,6 +39,7 @@ module.exports = function( params ) {
 	var oscPort = '12000';
 	var touchInterval = 20;
 	var heartbeat = true;
+	var remoteAddresses = new Array(4);
 
 	var activeRemote3DIndex;
 	var activeRemote2DIndex;
@@ -92,7 +93,7 @@ module.exports = function( params ) {
 		sockets[id] = ws;
 		// console.log( 'connection opened to ' + ws.id + ' at ' + ws.url );
 		console.log( 'made a connection' );
-		console.log( 'web socket connected at ' + ws._socket.remoteAddress );
+		console.log( 'web socket remoteAddress: ' + ws._socket.remoteAddress );
 
 		ws.on( 'message', ws.onSocketMessage.bind(ws) );
 
@@ -128,7 +129,7 @@ module.exports = function( params ) {
 			this.send( message );
 		}
 		else if ( json.type == 'registerRemoteControl' ) {
-			console.log( 'registered a remote control' );
+			console.log( 'registered a remote control: ' + json.name );
 			this.remoteControl = true;
 			this.send( message );
 
@@ -351,13 +352,15 @@ module.exports = function( params ) {
 		for ( var i=0; i<remotes.length; i++ ) {
 			var exists = remotes[i]!=undefined;
 			if ( exists ) {
+				// console.log( 'socket ' + remotes[i]._socket.remoteAddress );
 				// console.log( 'socket address: ' + remotes[i].address );
 			}
 			remoteInfos.push({
 				connected: exists,
 				address: exists?remotes[i].address:undefined,
 				remote3D: exists?remotes[i].remote3D:false,
-				remote2D: exists?remotes[i].remote2D:false
+				remote2D: exists?remotes[i].remote2D:false,
+				ip: exists?remotes[i]._socket.remoteAddress:'0.0.0.0'
 			});
 		}
 
