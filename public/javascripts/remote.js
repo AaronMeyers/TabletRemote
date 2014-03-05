@@ -37,14 +37,10 @@ $(document).on( 'ready', function() {
 	fingerCanvas = $('#fingercanvas')[0];
 	wireCanvas = $('#wirecanvas')[0];
 	fingerImg = $('#clonablefinger').find('img')[0];
-	// caveImg = $('#cave').find('img')[0];
 	caveImg = $('#wireframeCave')[0];
 	shadedImg = $('#shadedCave')[0];
 	imgWidth = 1024;
-	console.log( caveImg.width +',' + caveImg.height );
 	imgHeight = (imgWidth/caveImg.width) * caveImg.height;
-
-	// $('.canvasImage').width(window.innerHeight);
 
 	countdown = new Countdown({finalCountdownCallback:finalCountdown});
 	particleSystem = new ParticleSystem( canvas.getContext( '2d' ), 300 );
@@ -54,20 +50,28 @@ $(document).on( 'ready', function() {
 	initWebSocket();
 
 	menu = new Menu();
-	// menu.init( effectInfo2D.concat( effectInfo2D, effectInfo2D ) );
-	// menu.hide(true);
 
+
+	$('.remoteNumButton').on( 'click', function( event ) {
+		var num = parseInt( event.target.innerHTML );
+		console.log( num );
+		sendSocketMessage( JSON.stringify({
+			type: 	'setRemoteNum',
+			num: 	num
+		}) );
+	});
+	$('#hideSettingsButton').on( 'click', function(event) {
+		$('#settingsPanel').fadeOut();
+	});
 	$('.iphone').on( 'touchstart', onTouchStart );
 	$('.iphone').on( 'touchend', onTouchEnd );
 	$('.iphone').on( 'touchmove', onTouchMove );
-
 	$(document).on( 'touchstart', function( e ) {
 		// e.preventDefault();
 	});
 	$(document).on( 'touchmove', function( e ) {
 		e.preventDefault();
 	});
-
 	$(document).on( 'keydown', function( e ) {
 		var key = String.fromCharCode( e.keyCode );
 		if ( key == 'O' ) {
@@ -87,8 +91,6 @@ $(document).on( 'ready', function() {
 			});
 		}
 	});
-
-
 	$(window).on( 'resize', onResize );
 	onResize();
 
@@ -99,7 +101,6 @@ $(document).on( 'ready', function() {
 		$('#effectChosen').fadeOut();
 		$('#big-countdown').fadeIn();
 	}
-
 	function loop() {
 
 		if ( !isActive ) {
@@ -119,8 +120,17 @@ $(document).on( 'ready', function() {
 		var keys = Object.keys( activeTouches );
 		for ( var i=0; i<keys.length; i++ ) {
 			var touch = activeTouches[keys[i]];
-			particleSystem.spawnParticles( 5, touch.x, touch.y );
-			fingerctx.drawImage( fingerImg, touch.x - size/2, touch.y - size/2, size, size );
+			if ( Date.now() - touch.time > 3000 ) {
+				// fix for lingering touches
+				console.log( 'it has been a second:', touch );
+				// var index = Object.keys(activeTouches).indexOf( touch.identifier.toString() );
+				sendTouch( 'end', i, touch.x, touch.y );
+				delete activeTouches[keys[i]];
+			}
+			else {
+				particleSystem.spawnParticles( 5, touch.x, touch.y );
+				fingerctx.drawImage( fingerImg, touch.x - size/2, touch.y - size/2, size, size );
+			}
 		}
 
 
@@ -154,8 +164,6 @@ $(document).on( 'ready', function() {
 		particleSystem.update( ctx );
 		requestAnimationFrame( loop );
 	}
-
-
 	function initWebSocket() {
 		var serverAddress = location.host.split( ":" )[0];
 		socket = new WebSocket("ws://" + serverAddress + ":8080");
@@ -178,21 +186,6 @@ $(document).on( 'ready', function() {
 		}
 		socket.onmessage = onSocketMessage;
 	}
-
-	$('.remoteNumButton').on( 'click', function( event ) {
-		var num = parseInt( event.target.innerHTML );
-		console.log( num );
-		sendSocketMessage( JSON.stringify({
-			type: 	'setRemoteNum',
-			num: 	num
-		}) );
-	});
-
-	$('#hideSettingsButton').on( 'click', function(event) {
-		console.log( 'hello' );
-		$('#settingsPanel').fadeOut();
-	});
-
 	function onSocketMessage( message ) {
 
 		var json = JSON.parse( message.data );
@@ -263,7 +256,6 @@ $(document).on( 'ready', function() {
 			location.reload();
 		}
 	}
-
 	function activate(effectType) {
 		// fade in canvas
 		// $('#canvas').fadeIn(1000);
@@ -288,7 +280,6 @@ $(document).on( 'ready', function() {
 
 		isActive = true;
 	}
-
 	function deactivate( json ) {
 		// fade out cave
 		// $('#canvas').fadeOut(1000);
@@ -404,16 +395,15 @@ $(document).on( 'ready', function() {
 		var touchEvent = e.originalEvent;
 		for ( var i=0; i<touchEvent.changedTouches.length; i++ ) {
 
-
 			var touch = touchEvent.changedTouches[i];
 
 			if ( activeTouches[touch.identifier] == undefined ) {
 				activeTouches[touch.identifier] = {
 					x: touch.clientX,
 					y: touch.clientY,
+					time: Date.now(),
 				}
 			}
-
 			sendTouch( 'start', Object.keys(activeTouches).length-1, touch.clientX, touch.clientY );
 		}
 	}
@@ -426,9 +416,17 @@ $(document).on( 'ready', function() {
 				var activeTouch = activeTouches[touch.identifier];
 				activeTouch.x = touch.clientX;
 				activeTouch.y = touch.clientY;
+				activeTouch.time = Date.now()
 			}
-
-
+			else {
+				// restart the touch
+				activeTouches[touch.identifier] = {
+					x: touch.clientX,
+					y: touch.clientY,
+					time: Date.now(),
+				}
+				sendTouch( 'start', Object.keys(activeTouches).length-1, touch.clientX, touch.clientY );
+			}
 		}
 	}
 
@@ -439,7 +437,6 @@ $(document).on( 'ready', function() {
 			if ( activeTouches[touch.identifier] ) {
 				var activeTouch = activeTouches[touch.identifier];
 				var index = Object.keys(activeTouches).indexOf( touch.identifier.toString() );
-
 				sendTouch( 'end', index, touch.clientX, touch.clientY );
 				delete activeTouches[touch.identifier];
 			}

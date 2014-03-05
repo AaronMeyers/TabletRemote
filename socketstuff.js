@@ -266,7 +266,9 @@ module.exports = function( params ) {
 			clearTimeout( turnTickIntervalId );
 
 			remotes.forEach(function(r){
-				if ( r && r.readyState != WebSocket.OPEN )
+				if ( !r )
+					return;
+				if ( r.readyState != WebSocket.OPEN )
 					return;
 				r.send(JSON.stringify({
 					type: 'reload'
@@ -472,6 +474,8 @@ module.exports = function( params ) {
 	function sendOscTouch( address, phase, index, x, y, w, h ) {
 		if ( index > 8 ) // ignoring fingers 9 and 10
 			return;
+
+		console.log( 'the phase: ' + phase + ' the index: ' + index + ' the x: ' + x + ' the y: ' + y );
 
 		var buf = osc.toBuffer({
 			address: address,
