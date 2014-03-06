@@ -4,6 +4,7 @@ module.exports = function( params ) {
 	// create websocket stuff
 	var fs = require('fs');
 	var DMX = require('dmx');
+	var Animation = DMX.Animation;
 	var dmx = new DMX();
 
 	var universe = dmx.addUniverse('demo', 'enttec-usb-dmx-pro', 0);
@@ -43,6 +44,8 @@ module.exports = function( params ) {
 
 	var activeRemote3DIndex;
 	var activeRemote2DIndex;
+
+	var remoteDMXChannels = [ 110, 111, 112, 113 ];
 
 	loadSettings();
 
@@ -124,6 +127,16 @@ module.exports = function( params ) {
 			if ( this.remote2D ) {
 				sendOscTouch( '/touch2D', json.phase, json.index, json.x, json.y, json.w, json.h );
 			}
+		}
+		else if ( json.type =='setDMX' ) {
+			console.log( 'setting dmx channel ' + json.channel + ' to ' + json.value );
+			var channel = json.channel.toString();
+			var value = json.value;
+
+			var msg = {};
+			msg[channel] = value;
+			universe.update( msg );
+
 		}
 		else if ( json.type == 'setRemoteNum' ) {
 			setRemoteNum( this, json.num );
@@ -298,6 +311,33 @@ module.exports = function( params ) {
 
 	}
 
+	function lightsOn( dmxChannel ) {
+
+		var anim = new Animation();
+		var on = {}, off = {};
+		on[dmxChannel] = 255;
+		off[dmxChannel] = 0;
+
+		anim.add( on, 0 ).delay( 500 ).add( off, 0 ).delay( 500 );
+		anim.add( on, 0 ).delay( 500 ).add( off, 0 ).delay( 500 );
+		anim.add( on, 0 ).run( universe, function() {
+			console.log( 'lights are on for dmx channel: ' + dmxChannel );
+		});
+	}
+
+	function lightsOff( dmxChannel ) {
+
+		var anim = new Animation();
+		var on = {}, off = {};
+		on[dmxChannel] = 255;
+		off[dmxChannel] = 0;
+
+		anim.add( off, 1000 ).run( universe, function() {
+			console.log( 'lights are off for dmx channel: ' + dmxChannel );
+		});
+
+	}
+
 	function activateRemotes( remote3DIndex, remote2DIndex ) {
 
 		console.log( 'activating 3D on index ' + remote3DIndex );
@@ -319,9 +359,11 @@ module.exports = function( params ) {
 		// send the old remotes deactivation messages
 		if ( remotes[deactivate3DIndex] ) {
 			remotes[deactivate3DIndex].send(deactivationMsg);
+			lightsOff( remoteDMXChannels[deactivate3DIndex] );
 		}
 		if ( remotes[deactivate2DIndex] ) {
 			remotes[deactivate2DIndex].send(deactivationMsg);
+			lightsOff( remoteDMXChannels[deactivate2DIndex] );
 		}
 
 		// send the remotes activation messages
@@ -332,6 +374,7 @@ module.exports = function( params ) {
 				effectType: '3D'
 			}));
 			sendOscEffectChange( '/effect3D', remotes[remote3DIndex].effectIndex );
+			lightsOn( remoteDMXChannels[remote3DIndex] );
 		}
 		if ( remotes[remote2DIndex] ) {
 			setRemote2D( remotes[remote2DIndex] );
@@ -340,6 +383,7 @@ module.exports = function( params ) {
 				effectType: '2D'
 			}));
 			sendOscEffectChange( '/effect2D', remotes[remote2DIndex].effectIndex );
+			lightsOn( remoteDMXChannels[remote2DIndex] );
 		}
 
 		turnTicks = 0;
@@ -475,7 +519,7 @@ module.exports = function( params ) {
 		if ( index > 8 ) // ignoring fingers 9 and 10
 			return;
 
-		console.log( 'the phase: ' + phase + ' the index: ' + index + ' the x: ' + x + ' the y: ' + y );
+		// console.log( 'the phase: ' + phase + ' the index: ' + index + ' the x: ' + x + ' the y: ' + y );
 
 		var buf = osc.toBuffer({
 			address: address,
@@ -488,7 +532,7 @@ module.exports = function( params ) {
 			]
 		});
 		var thePort = (address=='/touch3D'?parseInt(oscPort):parseInt(oscPort)+10) + index;
-		console.log( 'the port: ' + thePort + ' the address ' + address );
+		// console.log( 'the port: ' + thePort + ' the address ' + address );
 
 		udp.send( buf, 0, buf.length, thePort, oscAddress );
 	}

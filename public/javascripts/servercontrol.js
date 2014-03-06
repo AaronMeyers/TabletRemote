@@ -33,6 +33,9 @@ $(document).on( 'ready', function() {
 	$('#turnLengthInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
 	$('#welcomeLengthInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
 	$('#exitLengthInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
+	$('#dmxChannelInput').bind('enterKey', sendDMXMessage ).keyup( enterKeyCallback ).val(100);
+	$('#dmxValueInput').bind('enterKey', sendDMXMessage ).keyup( enterKeyCallback ).val(50);
+	$('#sendDMXButton').bind('click', sendDMXMessage );
 	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered ).keyup( enterKeyCallback );
 
 	$('#heartbeatToggle').change(function() {
@@ -105,6 +108,16 @@ $(document).on( 'ready', function() {
 		e.preventDefault();
 		return false;
 	});
+
+	function sendDMXMessage() {
+		var channel = $('#dmxChannelInput').blur().val();
+		var value = $('#dmxValueInput').blur().val();
+		sendSocketMessage(JSON.stringify({
+			type: 'setDMX',
+			channel: channel,
+			value: value
+		}));
+	}
 
 	function enterKeyCallback( e ) {
 		if ( e.keyCode == 13 ) {
