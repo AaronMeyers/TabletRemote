@@ -31,6 +31,14 @@ a {
 canvas {
 	position: absolute;
 }
+
+#debug {
+	color: white;
+	position: absolute;
+	font-size: 32px;
+	z-index: 10000
+}
+
 #welcome {
 }
 

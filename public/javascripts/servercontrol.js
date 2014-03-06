@@ -96,6 +96,20 @@ $(document).on( 'ready', function() {
 		}));
 	});
 
+	$('.openMenuButton').click(function() {
+		sendSocketMessage(JSON.stringify({
+			type:'openMenu',
+			num: $(this).attr('remote')
+		}));
+	});
+
+	$('.closeMenuButton').click(function() {
+		sendSocketMessage(JSON.stringify({
+			type:'closeMenu',
+			num: $(this).attr('remote')
+		}));
+	});
+
 	$('.startCountdownButton').click(function() {
 		sendSocketMessage(JSON.stringify({
 			type:'startCountdown',

@@ -19,7 +19,9 @@ var utils = {
   cmap: function(v, i1, i2, o1, o2) {
     return utils.clamp(o1 + (o2 - o1) * (v - i1) / (i2 - i1), o1, o2);
   },
-
+  mod: function(n, m) {
+    return ((m % n) + n) % n;
+  },
   wrap: function(value, rangeSize) {
     while (value < 0) {
       value += rangeSize;

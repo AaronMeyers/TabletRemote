@@ -3,6 +3,10 @@
 <script src="javascripts/utils.js"></script>
 <script src="javascripts/dat.gui.min.js"></script>
 <script src="javascripts/crystalgen.js"></script>
+<script type="text/javascript" src="/javascripts/Tween.js"></script>
+<script type="text/javascript" src="/javascripts/three.min.js"></script>
+<script type="text/javascript" src="/javascripts/CrystalGeometry.js"></script>
+<script src="javascripts/CrystalMenu.js"></script>
 <script src="javascripts/menu.js"></script>
 <script type="text/javascript">
 
@@ -22,11 +26,18 @@
 		// 	width: 300,
 		// 	height: 600
 		// });
-		menu = new Menu();
+		menu = new Menu({useCrystalMenu:true, boxTouchCallback: boxTouchCallback});
 		// menu.init( effectInfo2D.concat( effectInfo2D ) );
 		menu.init( effectInfo2D );
 		// menu.open();
 
+		function boxTouchCallback( menuBox ) {
+			menu.close();
+
+			setTimeout( function(){
+				menu.open();
+			}, 1000 );
+		}
 
 		$(document).on( 'keydown', function(e) {
 			var key = String.fromCharCode( e.keyCode );

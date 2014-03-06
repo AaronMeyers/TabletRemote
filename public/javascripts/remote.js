@@ -202,14 +202,14 @@ $(document).on( 'ready', function() {
 			if ( remoteNum == 1 || remoteNum == 2 ) {
 				// menu.show();
 				menu.kill();
-				menu = new Menu({boxTouchCallback:effectChosen});
+				menu = new Menu({boxTouchCallback:effectChosen, useCrystalMenu:false});
 				menu.init( effectInfo3D );
 				menu.close(true);
 				// menu.hide(true);
 			}
 			else if ( remoteNum == 3 || remoteNum == 4 ) {
 				menu.kill();
-				menu = new Menu({boxTouchCallback:effectChosen});
+				menu = new Menu({boxTouchCallback:effectChosen, useCrystalMenu:false});
 				menu.init( effectInfo2D );
 				menu.close(true);
 				// menu.hide(true);
@@ -254,6 +254,12 @@ $(document).on( 'ready', function() {
 		}
 		else if ( json.type == 'reload' ) {
 			location.reload();
+		}
+		else if ( json.type == 'openMenu' ) {
+			menu.open();
+		}
+		else if ( json.type == 'closeMenu' ) {
+			menu.close();
 		}
 	}
 	function activate(effectType) {

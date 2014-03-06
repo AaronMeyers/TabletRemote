@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta id="viewport" name="viewport" content ="width=device-width, minimum-scale=1, maximum-scale=1, user-scalable=no" />
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="/stylesheets/style.css">
+		<script type="text/javascript" src="/javascripts/jquery-2.1.0.min.js"></script>
+		<script type="text/javascript" src="/javascripts/three.min.js"></script>
+		<script type="text/javascript" src="/javascripts/utils.js"></script>
+		<script type="text/javascript" src="/javascripts/CrystalGeometry.js"></script>
+		<script type="text/javascript" src="/javascripts/CrystalMenu.js"></script>
+		<script type="text/javascript">
+			var renderer, scene, camera;
+			var WIDTH = 1024, HEIGHT = 768;
+
+			var cube;
+
+			// var crystal;
+			var crystalNode;
+			var crystals = [];
+
+			var crystalMenu;
+
+			function init() {
+
+				crystalMenu = new CrystalMenu( 1024, 768 );
+				crystalMenu.active = true;
+				// document.getElementById( 'container' ).appendChild( crystalMenu.getDOMElement() );
+				$('#container').append( crystalMenu.getDOMElement() );
+				crystalMenu.init();
+			}
+
+			$(document).on( 'ready', function() {
+				init();
+				$(document).on( 'keydown', function(e) {
+					if ( String.fromCharCode(e.keyCode) == 'R' ) {
+						crystalMenu.kill();
+						crystalMenu = new CrystalMenu( 1024, 768 );
+						crystalMenu.active = true;
+						$('#container').append( crystalMenu.getDOMElement() );
+						crystalMenu.init();
+					}
+				});
+			});
+		</script>
+	</head>
+	<body style="margin:0px">
+		<div id='container'>
+		</div>
+	</body>
+</html>

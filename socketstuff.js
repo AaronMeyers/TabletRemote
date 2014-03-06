@@ -142,6 +142,20 @@ module.exports = function( params ) {
 			setRemoteNum( this, json.num );
 			this.send( message );
 		}
+		else if ( json.type == 'openMenu' ) {
+			if ( remotes[json.num-1] != undefined ) {
+				remotes[json.num-1].send(JSON.stringify({
+					type: 'openMenu'
+				}));
+			}
+		}
+		else if ( json.type == 'closeMenu' ) {
+			if ( remotes[json.num-1] != undefined ) {
+				remotes[json.num-1].send(JSON.stringify({
+					type: 'closeMenu'
+				}));
+			}
+		}
 		else if ( json.type == 'registerRemoteControl' ) {
 			console.log( 'registered a remote control: ' + json.name );
 			this.deviceName = json.name;

@@ -112,6 +112,7 @@ function Menu( params ) {
 	var itemHeight = (typeof params.itemHeight === "undefined") ? 150 : params.itemHeight;
 	var gui = (typeof params.gui === "undefined") ? undefined : params.gui;
 	var boxTouchCallback = (typeof params.boxTouchCallback === "undefined") ? undefined : params.boxTouchCallback;
+	var useCrystalMenu = (typeof params.useCrystalMenu === "undefined" ) ? false : params.useCrystalMenu;
 
 	this.name = "menu" + menuInstance++;
 	this.retracted = false;
@@ -138,6 +139,17 @@ function Menu( params ) {
 	this.trackVelocity = 0.0;
 	this.trackFrameRate = 1000 / 60;
 
+	this.crystalMenu = useCrystalMenu ? new CrystalMenu(1024,768) : undefined;
+	if ( this.crystalMenu ) {
+		this.crystalMenu.active = true;
+		$('#menu-bg').append( this.crystalMenu.getDOMElement() );
+		$(this.crystalMenu.getDOMElement()).css({
+			'pointer-events': 'none',
+			'z-index': 3000
+		});
+		this.crystalMenu.init();
+	}
+
 	this.initialized = false;
 	this.dead = false;
 	this.gui = gui;
@@ -153,6 +165,8 @@ function Menu( params ) {
 
 Menu.prototype.kill = function() {
 	console.log( this.name + ' getting killed' );
+	if ( this.crystalMenu )
+		this.crystalMenu.kill();
 	this.clear();
 	this.dead = true;
 }
@@ -205,7 +219,8 @@ Menu.prototype.init = function( items, startClosed ) {
 			'height': this.boxHeight,
 			'left': 600
 		});
-		clone.append( box );
+		// clone.append( box );
+		$('#menu').append( box );
 		item.box = box;
 		item.visible = true;
 
@@ -266,18 +281,6 @@ Menu.prototype.init = function( items, startClosed ) {
 
 	$('.menu-item img').height( this.itemHeight - 30 ).css({
 		'margin-top': '-14px'
-	});
-
-	$('#menu-button').on( 'touchstart', function(e) {
-		if ( menu.transitioning ) {
-			console.log( 'button touch ignored -- transitioning' );
-			return;
-		}
-
-		if ( menu.retracted )
-			menu.open();
-		else
-			menu.close();
 	});
 
 	$('.menu-box').on('touchstart', function(e){
@@ -361,6 +364,10 @@ Menu.prototype.scroll = function() {
 	this.trackRotationOffset += this.trackVelocity;
 	this.trackVelocity *= .75;
 
+	if ( this.crystalMenu ) {
+		this.crystalMenu.setRotation( -this.trackRotationOffset );
+	}
+
 	for ( var i=0; i<this.items.length; i++ ) {
 		var item = this.items[i];
 		var parent = item.parent();
@@ -394,6 +401,9 @@ Menu.prototype.scroll = function() {
 			box.show();
 			box.visible = true;
 		}
+
+		if ( this.crystalMenu )
+			item.hide();
 
 		var boxSeparation = ( this.boxExtents * 2 ) / this.items.length;
 
@@ -447,9 +457,9 @@ Menu.prototype.open = function() {
 		var item = this.items[i];
 		var box = item.box;
 		var boxY = box.boxY==undefined?0:box.boxY;
+		var rotation = item.attr('rotation');
+		var delay = utils.cmap( Math.abs( rotation ), 0, 90, 0, 300 );
 		if ( item.is(':visible') ) {
-			var rotation = item.attr('rotation');
-			var delay = utils.cmap( Math.abs( rotation ), 0, 90, 0, 300 );
 			maxDelayMillis = delay > maxDelayMillis ? delay : maxDelayMillis;
 			var z = (rotation+90) % 360;
 			var extend = this.getXPosForRotation( rotation );
@@ -473,7 +483,9 @@ Menu.prototype.open = function() {
 			})
 		}
 
-		if ( box.is(':visible') ) {
+		// if ( box.is(':visible') ) {
+		if ( Math.abs(boxY) - this.boxHeight/2 < window.innerHeight/2 ) {
+			box.show();
 			box.css({
 				'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px) scale3d(1,1,1)',
 				// '-webkit-transform': 'scale3d(1,1,1)',
@@ -486,9 +498,14 @@ Menu.prototype.open = function() {
 			'-webkit-transition': 'right .3s ease-in-out'
 		});
 
-		$('#menu-bg-img').fadeIn();
+		// $('#menu-bg-img').fadeIn();
 
 	}
+
+	if ( this.crystalMenu ) {
+		this.crystalMenu.open();
+	}
+
 	setTimeout(this.opened.bind(this), (maxDelayMillis+transitionMillis) );
 	menu.transitioning = true;
 }
@@ -536,13 +553,18 @@ Menu.prototype.close = function( immediate ) {
 	var visibleBoxes = 0;
 
 
+	if ( this.crystalMenu ) {
+		this.crystalMenu.close( immediate?0:300 );
+	}
+
+
 	for ( var i=0; i<this.items.length; i++ ) {
 		var item = this.items[i];
 		var box = item.box;
 		var boxY = box.boxY==undefined?0:box.boxY;
+		var rotation = item.attr('rotation');
+		var delay = utils.cmap( Math.abs( rotation ), 90, 0, 0, 100 );
 		if ( item.is(':visible') ) {
-			var rotation = item.attr('rotation');
-			var delay = utils.cmap( Math.abs( rotation ), 90, 0, 0, 100 );
 			maxDelayMillis = delay > maxDelayMillis ? delay : maxDelayMillis;
 			var z = (rotation+90) % 360;
 			var transform = 'rotate( ' + rotation + 'deg ) translate3d( -800px, 0px, ' + z + 'px )';
@@ -555,9 +577,11 @@ Menu.prototype.close = function( immediate ) {
 		}
 
 		if ( box.is(':visible') ) {
+			
 			visibleBoxes++;
 			var transform = 'translate3d(0px,'+(boxY)+'px,0px) scale( 0.005, 0.005)';
 			var transition = (immediate?undefined:'-webkit-transform '+ transitionMillis +'ms ease-in-out ' + delay + 'ms');
+			
 			box.css({
 				'-webkit-transform': transform,
 				// '-webkit-transform': 'scale3d( 0, 0, 0)',
@@ -573,12 +597,12 @@ Menu.prototype.close = function( immediate ) {
 
 	$('#menu-bg').css( 'pointer-events', 'none' );
 
-	if ( immediate )
-		$('#menu-bg-img').hide();
-	else
-		$('#menu-bg-img').fadeOut();
+	// if ( immediate )
+	// 	$('#menu-bg-img').hide();
+	// else
+	// 	$('#menu-bg-img').fadeOut();
 
-	console.log( 'max delay millis: ' + maxDelayMillis );
+	// console.log( 'max delay millis: ' + maxDelayMillis );
 
 	setTimeout( this.closed.bind(this), (immediate?0:(maxDelayMillis+transitionMillis)) );
 	menu.transitioning = true;
