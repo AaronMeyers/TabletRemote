@@ -26,6 +26,7 @@ ParticleSystem.prototype.spawnParticle = function( x, y ) {
 
 ParticleSystem.prototype.update = function( ctx ) {
 
+	// console.log( 'particle system update' );
 	// ctx.clearRect( 0, 0, window.innerWidth, window.innerHeight );
 	ctx.beginPath();
 	ctx.strokeStyle = 'white';

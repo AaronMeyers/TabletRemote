@@ -21,7 +21,7 @@
     [[NSUserDefaults standardUserDefaults] setValue:[textField text] forKey:@"lastAddress"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     // load the web view
-    NSString *urlString = [NSString stringWithFormat:@"http://%@", [textField text]];
+    NSString *urlString = [NSString stringWithFormat:@"http://%@?deviceName=%@", [self.addressTextField text], [[UIDevice currentDevice] name]];
     NSURL *url = [NSURL URLWithString:urlString];
     [self.remoteWebView loadRequest:[NSURLRequest requestWithURL:url]];
     return YES;

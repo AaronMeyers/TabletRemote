@@ -161,6 +161,7 @@ $(document).on( 'ready', function() {
 		// ctx.globalCompositeOperation = 'soft-light';
 		// ctx.drawImage( fingerCanvas, 0, 0, width, height );
 		ctx.globalCompositeOperation = 'source-over';
+		// console.log( 'updating particles: ' + isActive );
 		particleSystem.update( ctx );
 		requestAnimationFrame( loop );
 	}
@@ -203,14 +204,14 @@ $(document).on( 'ready', function() {
 				// menu.show();
 				menu.kill();
 				menu = new Menu({boxTouchCallback:effectChosen, useCrystalMenu:false});
-				menu.init( effectInfo3D );
+				menu.init( effectInfo3D.concat( effectInfo3D ) );
 				menu.close(true);
 				// menu.hide(true);
 			}
 			else if ( remoteNum == 3 || remoteNum == 4 ) {
 				menu.kill();
 				menu = new Menu({boxTouchCallback:effectChosen, useCrystalMenu:false});
-				menu.init( effectInfo2D );
+				menu.init( effectInfo2D.concat( effectInfo2D ) );
 				menu.close(true);
 				// menu.hide(true);
 			}

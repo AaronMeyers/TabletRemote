@@ -1,7 +1,7 @@
 {
-    "oscAddress": "192.168.107.149",
+    "oscAddress": "169.254.122.243",
     "oscPort": "12000",
-    "heartbeat": false,
+    "heartbeat": true,
     "touchInterval": "20",
     "autoSequence": false,
     "welcomeLength": "15",

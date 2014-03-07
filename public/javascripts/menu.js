@@ -1,106 +1,56 @@
 var effectInfo2D = [
 	{
 		name: '2D Effect 1',
-		img: '01.gif',
+		img: 'glow.gif',
 		instruction: 'Do something... 1'
 	},
 	{
 		name: '2D Effect 2',
-		img: '02.gif',
+		img: 'light1.gif',
 		instruction: 'Do something... 2'
 	},
 	{
 		name: '2D Effect 3',
-		img: '03.gif',
+		img: 'shadow.gif',
 		instruction: 'Do something... 3'
 	},
 	{
 		name: '2D Effect 4',
-		img: '04.gif',
+		img: 'wireframe.gif',
 		instruction: 'Do something... 4'
 	},
 	{
 		name: '2D Effect 5',
-		img: '05.gif',
+		img: 'woble.gif',
 		instruction: 'Do something... 5'
-	},
-	{
-		name: '2D Effect 6',
-		img: '06.gif',
-		instruction: 'Do something... 6'
-	},
-	{
-		name: '2D Effect 7',
-		img: '07.gif',
-		instruction: 'Do something... 7'
-	},
-	{
-		name: '2D Effect 8',
-		img: '07.gif',
-		instruction: 'Do something... 8'
-	},
-	{
-		name: '2D Effect 9',
-		img: '07.gif',
-		instruction: 'Do something... 9'
-	},
-	{
-		name: '2D Effect 10',
-		img: '07.gif',
-		instruction: 'Do something... 10'
 	},
 ];
 
 var effectInfo3D = [
 	{
 		name: '3D Effect 1',
-		img: '01.gif',
+		img: 'attractor.gif',
 		instruction: 'Do something... 1'
 	},
 	{
 		name: '3D Effect 2',
-		img: '02.gif',
+		img: 'colored_light.gif',
 		instruction: 'Do something... 2'
 	},
 	{
 		name: '3D Effect 3',
-		img: '03.gif',
+		img: 'fragments.gif',
 		instruction: 'Do something... 3'
 	},
 	{
 		name: '3D Effect 4',
-		img: '04.gif',
+		img: 'shadow.gif',
 		instruction: 'Do something... 4'
 	},
 	{
 		name: '3D Effect 5',
-		img: '05.gif',
+		img: 'wireframe.gif',
 		instruction: 'Do something... 5'
-	},
-	{
-		name: '3D Effect 6',
-		img: '06.gif',
-		instruction: 'Do something... 6'
-	},
-	{
-		name: '3D Effect 7',
-		img: '07.gif',
-		instruction: 'Do something... 7'
-	},
-	{
-		name: '3D Effect 8',
-		img: '07.gif',
-		instruction: 'Do something... 8'
-	},
-	{
-		name: '3D Effect 9',
-		img: '07.gif',
-		instruction: 'Do something... 9'
-	},
-	{
-		name: '3D Effect 10',
-		img: '07.gif',
-		instruction: 'Do something... 10'
 	},
 ];
 
@@ -120,6 +70,7 @@ function Menu( params ) {
 	this.itemWidth = itemWidth;
 	this.itemHeight = itemHeight;
 	this.items = [];
+	this.boxes = [];
 	this.dynamicWidth = true;
 	this.crystalWidth = 400;
 	this.boxWidth = 250;
@@ -175,9 +126,15 @@ Menu.prototype.clear = function() {
 
 	while ( this.items.length > 0 ) {
 		var item = this.items[0];
-		item.box.remove();
+		// item.box.remove();
 		item.remove();
 		this.items.splice(0,1);
+	}
+
+	while ( this.boxes.length > 0 ) {
+		var box = this.boxes[0];
+		box.remove();
+		this.boxes.splice(0,1);
 	}
 
 	if ( this.gui ) {
@@ -202,39 +159,20 @@ Menu.prototype.init = function( items, startClosed ) {
 
 		$('#menu-title').css( 'top', window.innerHeight/2 );
 
-		var clone = $('#clonable-menu-item').clone();
-		clone.attr( 'id', 'item'+i );
-		var item = clone.find('.menu-item');
-		// console.log( item );
 
 		var box = $('#clonable-menu-box').clone();
-		box.attr( 'id', 'box'+i );
-		box.attr( 'menu', this.name );
-		box.attr( 'index', i );
-		box.attr( 'effect-name', items[i].name );
-		box.css({
+		box.attr({
+			'id': 'box'+i,
+			'menu': this.name,
+			'index': i,
+			'effect-name': items[i].name
+		}).css({
 			'visibility': 'visible',
 			'margin-top': -this.boxHeight/2,
 			'width': this.boxWidth,
 			'height': this.boxHeight,
 			'left': 600
-		});
-		// clone.append( box );
-		$('#menu').append( box );
-		item.box = box;
-		item.visible = true;
-
-		// add a gem to the box
-		var gem = new Gem( this.boxWidth, this.boxHeight, this.boxMargin, box );
-		gem.generate();
-		box.gem = gem;
-		box.visible = true;
-
-		// item.find('.menu-item-title').html( items[i].name );
-		box.find('.menu-box-title').html( items[i].name );
-
-		// item.find('img').attr( 'src', 'images/effect-thumbs/' + items[i].img );
-		box.find('img')
+		}).find('img')
 		.attr( 'src', 'images/effect-thumbs/' + items[i].img )
 		.css({
 			width: this.boxWidth - this.boxMargin * 2,
@@ -242,49 +180,57 @@ Menu.prototype.init = function( items, startClosed ) {
 			top: this.boxMargin,
 			left: this.boxMargin
 		});
+		// add a gem to the box
+		var gem = new Gem( this.boxWidth, this.boxHeight, this.boxMargin, box );
+		gem.generate();
+		box.gem = gem;
+		box.visible = true;
+		$('#menu').append( box );
+		this.boxes.push( box );
 
-		item.find('img').hide();
+		if ( !this.crystalMenu ) {
+			var clone = $('#clonable-menu-item').clone();
+			clone.attr( 'id', 'item'+i );
+			var item = clone.find('.menu-item');
+			item.box = box;
+			item.visible = true;
 
-		// var rotation = ( i / items.length ) * 360 + this.trackRotationOffset;
-		var rotation = ( ( i / items.length ) * 360 + this.trackRotationOffset ) % 360;
-		if ( rotation > 180 )
-			rotation = rotation - 360;
+			// var rotation = ( i / items.length ) * 360 + this.trackRotationOffset;
+			var rotation = ( ( i / items.length ) * 360 + this.trackRotationOffset ) % 360;
+			if ( rotation > 180 )
+				rotation = rotation - 360;
 
-		var crystal = new Crystal( this.itemWidth, this.itemHeight, item );
-		$(crystal.canvas).css({
-			position: 'relative',
-			float: 'left',
-			// left: 150
-		});
-		crystal.generate();
-		item.crystal = crystal;
+			var crystal = new Crystal( this.itemWidth, this.itemHeight, item );
+			$(crystal.canvas).css({
+				position: 'relative',
+				float: 'left',
+				// left: 150
+			});
+			crystal.generate();
+			item.crystal = crystal;
 
-		item.css({
-			background: 'none',
-			border: 'none',
+			item.css({
+				background: 'none',
+				border: 'none',
 
 
-			visibility: 'visible',
-			// visibility: 'hidden',
-			width: this.itemWidth,
-			height: this.itemHeight,
-			top: -this.itemHeight/2,
-			// '-webkit-transform'
-		});
-		item.attr( 'rotation', rotation );
-		$('#menu').append( clone );
-		this.items.push( item );
-		$('#menu-button').hide();
+				visibility: 'visible',
+				// visibility: 'hidden',
+				width: this.itemWidth,
+				height: this.itemHeight,
+				top: -this.itemHeight/2,
+				// '-webkit-transform'
+			});
+			item.attr( 'rotation', rotation );
+			$('#menu').append( clone );
+			this.items.push( item );
+		}
 	}
 	// keep menu in scope
 	var menu = this;
 
-	$('.menu-item img').height( this.itemHeight - 30 ).css({
-		'margin-top': '-14px'
-	});
-
 	$('.menu-box').on('touchstart', function(e){
-		console.log( 'touched a menu box: ' + $(this).attr('id') + ' ' + $(this).attr('menu') );
+		console.log( 'touched a menu box: ' + $(this).attr('id') + ' ' + $(this).attr('menu') + ' ' + $(this).attr('effect-name') );
 		e.preventDefault();
 		e.stopPropagation();
 		// menu.close();
@@ -292,29 +238,15 @@ Menu.prototype.init = function( items, startClosed ) {
 			menu.boxTouchCallback($(this));
 	});
 
-	$('.menu-item').on( 'touchstart', function(e) {
-		console.log( 'item touch start: ' + $(this).attr( 'item-num' ) + ' rotation: ' + $(this).attr( 'rotation' ) );
-		// console.log( $(this).css( '-webkit-transform' ) );
-	});
-
-	$('.menu-item').on( 'touchend', function(e) {
-		// console.log( 'item touch end: ' + $(this).attr( 'item-num' ) );
-	});
-
 	$('#menu-bg').on( 'touchstart', function(e) {
 		// startTracking( e.originalEvent );
 		menu.startTracking( e.originalEvent );
 	});
 
-	// if ( !this.initialized ) {
-		this.scroll();
-		if ( startClosed )
-			this.close( true );
-		this.initialized = true;
-	// }
-	// else {
-	// 	this.trackRotationOffset = 0;
-	// }
+	this.scroll();
+	if ( startClosed )
+		this.close( true );
+	this.initialized = true;
 }
 
 Menu.prototype.startTracking = function( touchEvent ) {
@@ -368,31 +300,17 @@ Menu.prototype.scroll = function() {
 		this.crystalMenu.setRotation( -this.trackRotationOffset );
 	}
 
-	for ( var i=0; i<this.items.length; i++ ) {
-		var item = this.items[i];
-		var parent = item.parent();
-		var box = item.box;
-		var rotation = ( ( i / this.items.length ) * 360 + this.trackRotationOffset ) % 360;
+	for ( var i=0; i<this.boxes.length; i++ ) {
+		var box = this.boxes[i];
+		var rotation = ( ( i / this.boxes.length ) * 360 + this.trackRotationOffset ) % 360;
 		if ( rotation > 180 )
 			rotation -= 360;
 		if ( rotation < -180 )
 			rotation += 360;
-		var boxY = utils.cmap( rotation, -180, 180, -this.boxExtents, this.boxExtents );	
+		var boxY = utils.cmap( rotation, -180, 180, -this.boxExtents, this.boxExtents );
+		box.y = boxY;
 
-		// if ( Math.abs(rotation) > 90 && item.is(':visible') ) {
-		if ( Math.abs(rotation) > 90 && item.visible ) {
-			item.hide();
-			item.visible = false;
-			continue;
-		}
-		// else if ( Math.abs(rotation) < 90 && !item.is(':visible') ) {
-		else if ( Math.abs(rotation) < 90 && !item.visible ) {
-			item.show();
-			item.visible = true;
-			continue;
-		}
-		// else if ( Math.abs(boxY) - this.boxHeight/2 > window.innerHeight/2 && box.is(':visible') ) {
-		else if ( Math.abs(boxY) - this.boxHeight/2 > window.innerHeight/2 && box.visible ) {
+		if ( Math.abs(boxY) - this.boxHeight/2 > window.innerHeight/2 && box.visible ) {
 			box.hide();
 			box.visible = false;
 			continue;
@@ -402,13 +320,18 @@ Menu.prototype.scroll = function() {
 			box.visible = true;
 		}
 
-		if ( this.crystalMenu )
-			item.hide();
 
-		var boxSeparation = ( this.boxExtents * 2 ) / this.items.length;
+		box.css({
+			// 'top': boxY 
+			'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px)'
+		});
+		box.boxY = boxY;
 
-		if ( Math.abs(boxY) < boxSeparation/2 ) {
-			$('#menu-title').html( box.find('.menu-box-title').html() );
+		var boxSeparation = ( this.boxExtents * 2 ) / this.boxes.length;
+
+		if ( Math.abs(box.y) < boxSeparation/2 ) {
+			// console.log( box.y );
+			$('#menu-title').html( box.attr('effect-name') );
 			var opacity = utils.cmap( Math.abs(boxY), (boxSeparation/2)-50, 50, 0, 1 );
 			$('#menu-title').css({
 				// '-webkit-filter': 'brightness('+(opacity*100)+'%)',
@@ -416,22 +339,42 @@ Menu.prototype.scroll = function() {
 				'top': window.innerHeight/2 + (boxY>0?1:-1) * ((1-opacity) * boxSeparation/2)
 			});
 		}
+	}
 
-		var z = (rotation+90) % 360;
-		var extend = this.getXPosForRotation( rotation );
-		box.css({
-			// 'top': boxY 
-			'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px)'
-		});
-		box.boxY = boxY;
-		// box.gem.jitter( 2.0 );
-		var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
+	if ( !this.crystalMenu ) {
+		for ( var i=0; i<this.items.length; i++ ) {
+			var item = this.items[i];
+			var parent = item.parent();
+			var box = item.box;
+			var rotation = ( ( i / this.items.length ) * 360 + this.trackRotationOffset ) % 360;
+			if ( rotation > 180 )
+				rotation -= 360;
+			if ( rotation < -180 )
+				rotation += 360;
+			var boxY = utils.cmap( rotation, -180, 180, -this.boxExtents, this.boxExtents );	
 
-		item.css({
-			'-webkit-transform': transform,
-			// width: (this.dynamicWidth&&!this.transitioning)?theWidth:undefined,
-		});
-		item.attr( 'rotation', rotation );
+			// if ( Math.abs(rotation) > 90 && item.is(':visible') ) {
+			if ( Math.abs(rotation) > 90 && item.visible ) {
+				item.hide();
+				item.visible = false;
+				continue;
+			}
+			// else if ( Math.abs(rotation) < 90 && !item.is(':visible') ) {
+			else if ( Math.abs(rotation) < 90 && !item.visible ) {
+				item.show();
+				item.visible = true;
+				continue;
+			}
+
+			var z = (rotation+90) % 360;
+			var extend = this.getXPosForRotation( rotation );
+			var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
+			item.css({
+				'-webkit-transform': transform,
+				// width: (this.dynamicWidth&&!this.transitioning)?theWidth:undefined,
+			});
+			item.attr( 'rotation', rotation );
+		}
 	}
 
 	requestAnimationFrame(this.scroll.bind(this), 1000/30);
@@ -453,54 +396,69 @@ Menu.prototype.open = function() {
 	var transitionMillis = 300;
 	var maxDelayMillis = 0;
 
-	for ( var i=0; i<this.items.length; i++ ) {
-		var item = this.items[i];
-		var box = item.box;
-		var boxY = box.boxY==undefined?0:box.boxY;
-		var rotation = item.attr('rotation');
-		var delay = utils.cmap( Math.abs( rotation ), 0, 90, 0, 300 );
-		if ( item.is(':visible') ) {
-			maxDelayMillis = delay > maxDelayMillis ? delay : maxDelayMillis;
-			var z = (rotation+90) % 360;
-			var extend = this.getXPosForRotation( rotation );
-			var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
-
-			var transition = '-webkit-transform ' + transitionMillis + 'ms ease-in-out ' + delay + 'ms';
-			// var transition = 'width .3s ease-in-out ' + delay + 'ms';
-			item.css({
-				// visibility: 'visible',
-				// width: this.getItemWidthForRotation( item.attr('rotation') ),
-				'-webkit-transform': transform,
-				'-webkit-transition': transition
-			});
-		}
-		else {
-			box.hide();
-			box.css({
-				'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px) scale3d(1,1,1)',
-				// '-webkit-transform': 'scale3d(1,1,1)',
-				'-webkit-transform': ''
-			})
-		}
-
-		// if ( box.is(':visible') ) {
-		if ( Math.abs(boxY) - this.boxHeight/2 < window.innerHeight/2 ) {
+	for ( var i=0; i<this.boxes.length; i++ ) {
+		var box = this.boxes[i];
+		if ( Math.abs(box.y) - this.boxHeight/2 < window.innerHeight/2 ) {
 			box.show();
 			box.css({
-				'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px) scale3d(1,1,1)',
-				// '-webkit-transform': 'scale3d(1,1,1)',
-				'-webkit-transition': '-webkit-transform .3s ease-in-out ' + delay + 'ms'
+				'-webkit-transform': 'translate3d(0px,' + box.y + 'px,0px) scale3d(1,1,1)',
+				'-webkit-transition': '-webkit-transform .3s ease-in-out'
+				// '-webkit-transition': '-webkit-transform .3s ease-in-out ' + delay + 'ms'
 			});
 		}
-
-		$('#menu-title').css({
-			right: 0,
-			'-webkit-transition': 'right .3s ease-in-out'
-		});
-
-		// $('#menu-bg-img').fadeIn();
-
 	}
+
+	if ( !this.crystalMenu ) {
+
+		for ( var i=0; i<this.items.length; i++ ) {
+			var item = this.items[i];
+			var box = item.box;
+			var boxY = box.boxY==undefined?0:box.boxY;
+			var rotation = item.attr('rotation');
+			var delay = utils.cmap( Math.abs( rotation ), 0, 90, 0, 300 );
+			if ( item.is(':visible') ) {
+				maxDelayMillis = delay > maxDelayMillis ? delay : maxDelayMillis;
+				var z = (rotation+90) % 360;
+				var extend = this.getXPosForRotation( rotation );
+				var transform = 'rotate( ' + rotation + 'deg ) translate3d( ' + extend + 'px, 0px, ' + z + 'px )';
+
+				var transition = '-webkit-transform ' + transitionMillis + 'ms ease-in-out ' + delay + 'ms';
+				// var transition = 'width .3s ease-in-out ' + delay + 'ms';
+				item.css({
+					// visibility: 'visible',
+					// width: this.getItemWidthForRotation( item.attr('rotation') ),
+					'-webkit-transform': transform,
+					'-webkit-transition': transition
+				});
+			}
+			else {
+				box.hide();
+				box.css({
+					'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px) scale3d(1,1,1)',
+					// '-webkit-transform': 'scale3d(1,1,1)',
+					'-webkit-transform': ''
+				})
+			}
+
+			// if ( box.is(':visible') ) {
+			if ( Math.abs(boxY) - this.boxHeight/2 < window.innerHeight/2 ) {
+				box.show();
+				box.css({
+					'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px) scale3d(1,1,1)',
+					// '-webkit-transform': 'scale3d(1,1,1)',
+					'-webkit-transition': '-webkit-transform .3s ease-in-out ' + delay + 'ms'
+				});
+			}
+
+			// $('#menu-bg-img').fadeIn();
+
+		}
+	}
+
+	$('#menu-title').css({
+		right: 0,
+		'-webkit-transition': 'right .3s ease-in-out'
+	});
 
 	if ( this.crystalMenu ) {
 		this.crystalMenu.open();
@@ -525,13 +483,11 @@ Menu.prototype.opened = function() {
 
 Menu.prototype.closed = function() {
 	// console.log( 'i just closed: ' + this.name );
-
-	for ( var i=0; i<this.items.length; i++ ) {
-		var box = this.items[i].box;
-		var boxY = box.boxY==undefined?0:box.boxY;
+	for ( var i=0; i<this.boxes.length; i++ ) {
+		var box = this.boxes[i];
 		box.css({
 			'-webkit-transition': '',
-			'-webkit-transform': 'translate3d(0px,'+boxY+'px,0px) scale3d(0,0,0)'
+			'-webkit-transform': 'translate3d(0px,'+box.y+'px,0px) scale3d(0,0,0)'
 		});
 	}
 	this.retracted = true;
@@ -558,35 +514,39 @@ Menu.prototype.close = function( immediate ) {
 	}
 
 
-	for ( var i=0; i<this.items.length; i++ ) {
-		var item = this.items[i];
-		var box = item.box;
-		var boxY = box.boxY==undefined?0:box.boxY;
-		var rotation = item.attr('rotation');
-		var delay = utils.cmap( Math.abs( rotation ), 90, 0, 0, 100 );
-		if ( item.is(':visible') ) {
-			maxDelayMillis = delay > maxDelayMillis ? delay : maxDelayMillis;
-			var z = (rotation+90) % 360;
-			var transform = 'rotate( ' + rotation + 'deg ) translate3d( -800px, 0px, ' + z + 'px )';
-			var transition = '-webkit-transform ' + transitionMillis + 'ms ease-in-out ' + delay + 'ms';
-			item.css({
-				'-webkit-transform': transform,
-				// width: 170,
-				'-webkit-transition': (immediate?undefined:transition)
-			});
-		}
+	for ( var i=0; i<this.boxes.length; i++ ) {
+		var box = this.boxes[i];
+		if ( box.visible ) {
+			// console.log( 'box: ' + )
 
-		if ( box.is(':visible') ) {
-			
-			visibleBoxes++;
-			var transform = 'translate3d(0px,'+(boxY)+'px,0px) scale( 0.005, 0.005)';
-			var transition = (immediate?undefined:'-webkit-transform '+ transitionMillis +'ms ease-in-out ' + delay + 'ms');
-			
+			var transform = 'translate3d(0px,'+(box.y)+'px,0px) scale( 0.005, 0.005)';
+			// var transition = (immediate?undefined:'-webkit-transform '+ transitionMillis +'ms ease-in-out ' + delay + 'ms');
+			var transition = (immediate?undefined:'-webkit-transform '+ transitionMillis +'ms ease-in-out');
 			box.css({
 				'-webkit-transform': transform,
-				// '-webkit-transform': 'scale3d( 0, 0, 0)',
 				'-webkit-transition': transition
 			});
+		}
+	}
+
+	if ( !this.crystalMenu ) {
+		for ( var i=0; i<this.items.length; i++ ) {
+			var item = this.items[i];
+			var box = item.box;
+			var boxY = box.boxY==undefined?0:box.boxY;
+			var rotation = item.attr('rotation');
+			var delay = utils.cmap( Math.abs( rotation ), 90, 0, 0, 100 );
+			if ( item.is(':visible') ) {
+				maxDelayMillis = delay > maxDelayMillis ? delay : maxDelayMillis;
+				var z = (rotation+90) % 360;
+				var transform = 'rotate( ' + rotation + 'deg ) translate3d( -800px, 0px, ' + z + 'px )';
+				var transition = '-webkit-transform ' + transitionMillis + 'ms ease-in-out ' + delay + 'ms';
+				item.css({
+					'-webkit-transform': transform,
+					// width: 170,
+					'-webkit-transition': (immediate?undefined:transition)
+				});
+			}
 		}
 	}
 

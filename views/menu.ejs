@@ -27,8 +27,8 @@
 		// 	height: 600
 		// });
 		menu = new Menu({useCrystalMenu:true, boxTouchCallback: boxTouchCallback});
-		// menu.init( effectInfo2D.concat( effectInfo2D ) );
-		menu.init( effectInfo2D );
+		menu.init( effectInfo2D.concat( effectInfo2D ) );
+		// menu.init( effectInfo2D );
 		// menu.open();
 
 		function boxTouchCallback( menuBox ) {
@@ -46,13 +46,13 @@
 				console.log( 'initializing 2D menu' );
 				menu.kill();
 				menu = new Menu( );
-				menu.init( effectInfo2D );
+				menu.init( effectInfo2D.concat( effectInfo2D ) );
 			}
 			else if ( key == '3' ) {
 				console.log( 'initializing 3D menu' );
 				menu.kill();
 				menu = new Menu();
-				menu.init( effectInfo3D );
+				menu.init( effectInfo3D.concat( effectInfo3D ) );
 			}
 			else if ( key == 'C' ) {
 				// menu.clear();
@@ -82,7 +82,6 @@
 
 <div id="clonable-menu-item" class="menu-item-wrapper">
 	<div class="menu-item" style="visibility:hidden;">
-		<img src="">
 		<div class="menu-item-title"></div>
 		<div class="menu-item-debug"></div>
 	</div>

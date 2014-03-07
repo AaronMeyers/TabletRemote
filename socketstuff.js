@@ -370,14 +370,25 @@ module.exports = function( params ) {
 				exitLength: exitLength
 		});
 
+		if ( remote3DIndex == 0 ) {
+			lightsOn( 108 );
+			lightsOff( 107 );
+		}
+		else {
+			lightsOn( 107 );
+			lightsOff( 108 );
+		}
+
 		// send the old remotes deactivation messages
 		if ( remotes[deactivate3DIndex] ) {
 			remotes[deactivate3DIndex].send(deactivationMsg);
-			lightsOff( remoteDMXChannels[deactivate3DIndex] );
+			remotes[deactivate3DIndex].remote3D = false;
+			// lightsOff( remoteDMXChannels[deactivate3DIndex] );
 		}
 		if ( remotes[deactivate2DIndex] ) {
 			remotes[deactivate2DIndex].send(deactivationMsg);
-			lightsOff( remoteDMXChannels[deactivate2DIndex] );
+			remotes[deactivate2DIndex].remote2D = false;
+			// lightsOff( remoteDMXChannels[deactivate2DIndex] );
 		}
 
 		// send the remotes activation messages
@@ -388,7 +399,7 @@ module.exports = function( params ) {
 				effectType: '3D'
 			}));
 			sendOscEffectChange( '/effect3D', remotes[remote3DIndex].effectIndex );
-			lightsOn( remoteDMXChannels[remote3DIndex] );
+			// lightsOn( remoteDMXChannels[remote3DIndex] );
 		}
 		if ( remotes[remote2DIndex] ) {
 			setRemote2D( remotes[remote2DIndex] );
@@ -397,7 +408,7 @@ module.exports = function( params ) {
 				effectType: '2D'
 			}));
 			sendOscEffectChange( '/effect2D', remotes[remote2DIndex].effectIndex );
-			lightsOn( remoteDMXChannels[remote2DIndex] );
+			// lightsOn( remoteDMXChannels[remote2DIndex] );
 		}
 
 		turnTicks = 0;
