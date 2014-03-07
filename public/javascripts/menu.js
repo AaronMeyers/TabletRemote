@@ -1,56 +1,56 @@
 var effectInfo2D = [
 	{
-		name: '2D Effect 1',
-		img: 'glow.gif',
-		instruction: 'Do something... 1'
-	},
-	{
-		name: '2D Effect 2',
-		img: 'light1.gif',
-		instruction: 'Do something... 2'
-	},
-	{
-		name: '2D Effect 3',
-		img: 'shadow.gif',
-		instruction: 'Do something... 3'
-	},
-	{
-		name: '2D Effect 4',
-		img: 'wireframe.gif',
-		instruction: 'Do something... 4'
-	},
-	{
-		name: '2D Effect 5',
+		name: 'Wobble',
 		img: 'woble.gif',
-		instruction: 'Do something... 5'
+		instruction: 'Your touch wobbles Eisriesentwelt.'
+	},
+	{
+		name: 'Glow',
+		img: 'glow.gif',
+		instruction: 'Your touch creates an icy glow.'
+	},
+	{
+		name: 'Light',
+		img: 'light1.gif',
+		instruction: 'Your touch illuminates Eisriesentwelt.'
+	},
+	{
+		name: 'Attractor',
+		img: 'attractor.gif',
+		instruction: 'Touch Eisriesentwelt to deform the geometry.'
+	},
+	{
+		name: 'Wireframe',
+		img: 'wireframe2.gif',
+		instruction: 'Your touch reveals the underlying wireframe of Eisriesentwelt.'
 	},
 ];
 
 var effectInfo3D = [
 	{
-		name: '3D Effect 1',
+		name: 'Attractor',
 		img: 'attractor.gif',
-		instruction: 'Do something... 1'
+		instruction: 'Touch Eisriesentwelt to deform the geometry.'
 	},
 	{
-		name: '3D Effect 2',
+		name: 'Colored Light',
 		img: 'colored_light.gif',
-		instruction: 'Do something... 2'
+		instruction: 'Colored lights respond to your touch'
 	},
 	{
-		name: '3D Effect 3',
+		name: 'Fragments',
 		img: 'fragments.gif',
-		instruction: 'Do something... 3'
+		instruction: 'Fragment Eisriesentwelt with your touch.'
 	},
 	{
-		name: '3D Effect 4',
+		name: 'Shadow',
 		img: 'shadow.gif',
-		instruction: 'Do something... 4'
+		instruction: 'Your touch creates moving shadows.'
 	},
 	{
-		name: '3D Effect 5',
+		name: 'Wireframe',
 		img: 'wireframe.gif',
-		instruction: 'Do something... 5'
+		instruction: 'Your touch reveals the underlying wireframe of Eisriesentwelt.'
 	},
 ];
 

@@ -95,6 +95,8 @@ $(document).on( 'ready', function() {
 	onResize();
 
 	function finalCountdown() {
+		if ( isActive )
+			return;
 		menu.close();
 		countdown.slideOut();
 		$('#welcome').fadeOut();
@@ -263,7 +265,7 @@ $(document).on( 'ready', function() {
 			menu.close();
 		}
 	}
-	function activate(effectType) {
+	function activate( effectType ) {
 		// fade in canvas
 		// $('#canvas').fadeIn(1000);
 		$('#canvas').css({visibility: 'visible'});
@@ -280,6 +282,7 @@ $(document).on( 'ready', function() {
 		$('#effect-instruction').html(instruction).delay(1000).fadeIn().delay(10000).fadeOut();
 
 		menu.close();
+		countdown.stop();
 		countdown.slideOut();
 		$('#welcome').fadeOut();
 		$('#effectChosen').fadeOut();

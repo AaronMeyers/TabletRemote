@@ -20,6 +20,10 @@ Countdown.prototype.init = function() {
 	});
 }
 
+Countdown.prototype.stop = function() {
+	clearInterval( this.tickIntervalId );
+}
+
 Countdown.prototype.slideIn = function() {
 	$('#countdown').css({
 		visibility: 'visible',
@@ -70,7 +74,6 @@ Countdown.prototype.tick = function() {
 	count--;
 
 	if ( count == 10 && this.finalCountdownCallback ) {
-		console.log( 'calling last minute callback' );
 		this.finalCountdownCallback();
 	}
 
