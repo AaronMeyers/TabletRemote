@@ -17,6 +17,7 @@ body {
   overflow: hidden;
   font: 14px UnitedSans, Helvetica, Arial, sans-serif;
   background: black;
+  margin: 0px;
 }
 
 a {
@@ -30,6 +31,51 @@ a {
 
 canvas {
 	position: absolute;
+}
+
+#scroll-wrapper {
+	position: absolute;
+	right: 280px;
+	overflow: hidden;
+	width: 300px;
+	height: 100%;
+	pointer-events: none;	
+}
+
+#menu-box-scroller {
+	/*position: absolute;*/
+	/*background: rgba(255,0,0,.5);*/
+	width: 400px;
+	height: 100%;
+	/*right: 200px;*/
+	overflow: auto;
+	pointer-events: none;
+}
+
+.fake-box {
+	background: yellow;
+	width: 100px;
+	height: 100px;
+	/*margin-bottom: 100px;*/
+	pointer-events: auto;
+	font-size: 100px;
+}
+
+.fake-box canvas {
+	position: relative;
+	top: 126px;
+	/*display: none;*/
+}
+
+.fake-box img {
+	/*position: relative;*/
+	width: 188px;
+	height: 188px;
+	margin: 30px;
+	border: 1px solid white;
+	pointer-events: none;
+	/*left: 30px;
+	top: 30px;*/
 }
 
 #debug {
@@ -169,15 +215,19 @@ canvas {
 .menu-box {
 	/*border: 3px solid white;*/
 	position: absolute;
-	z-index: -1000
-	/*background: black;*/
+	z-index: -1000;
+	/*background: red;*/
 	/*width: 100px;*/
 	/*height: 100px;*/
 }
 
 .menu-box img {
-	position: absolute;
-	/*z-index: 100;*/
+	position: inherit;
+	z-index: -100;
+}
+
+.menu-box canvas {
+	position: inherit;
 }
 
 .menu-box-title {

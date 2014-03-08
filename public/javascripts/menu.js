@@ -1,55 +1,55 @@
 var effectInfo2D = [
 	{
-		name: 'Wobble',
-		img: 'woble.gif',
-		instruction: 'Your touch wobbles Eisriesentwelt.'
-	},
-	{
 		name: 'Glow',
 		img: 'glow.gif',
 		instruction: 'Your touch creates an icy glow.'
 	},
 	{
-		name: 'Light',
-		img: 'light1.gif',
+		name: 'Trails',
+		img: 'wave.gif',
 		instruction: 'Your touch illuminates Eisriesentwelt.'
 	},
 	{
-		name: 'Attractor',
-		img: 'attractor.gif',
+		name: 'Wobble',
+		img: 'woble.gif',
+		instruction: 'Your touch wobbles Eisriesentwelt.'
+	},
+	{
+		name: 'Light Ray',
+		img: 'light_ray.gif',
 		instruction: 'Touch Eisriesentwelt to deform the geometry.'
 	},
 	{
-		name: 'Wireframe',
-		img: 'wireframe2.gif',
+		name: 'Point Ray',
+		img: 'point_ray.gif',
 		instruction: 'Your touch reveals the underlying wireframe of Eisriesentwelt.'
 	},
 ];
 
 var effectInfo3D = [
 	{
-		name: 'Attractor',
+		name: 'Deformer',
 		img: 'attractor.gif',
 		instruction: 'Touch Eisriesentwelt to deform the geometry.'
 	},
 	{
-		name: 'Colored Light',
-		img: 'colored_light.gif',
+		name: 'Illumination',
+		img: 'light1.gif',
 		instruction: 'Colored lights respond to your touch'
 	},
 	{
-		name: 'Fragments',
-		img: 'fragments.gif',
+		name: 'Ice Ray',
+		img: 'colored_light.gif',
+		instruction: 'Your generates a freezing effect on Eisriesentwelt.'
+	},
+	{
+		name: 'Explosion',
+		img: 'fragments2.gif',
 		instruction: 'Fragment Eisriesentwelt with your touch.'
 	},
 	{
-		name: 'Shadow',
-		img: 'shadow.gif',
-		instruction: 'Your touch creates moving shadows.'
-	},
-	{
-		name: 'Wireframe',
-		img: 'wireframe.gif',
+		name: 'Sound',
+		img: 'sound.gif',
 		instruction: 'Your touch reveals the underlying wireframe of Eisriesentwelt.'
 	},
 ];
@@ -58,6 +58,7 @@ var menuInstance = 0;
 
 function Menu( params ) {
 	var params = (typeof params === "undefined" ) ? {} : params;
+	var useScroller = (typeof params.useScroller === "undefined" ) ? false : params.useScroller;
 	var itemWidth = (typeof params.itemWidth === "undefined") ? 350 : params.itemWidth;
 	var itemHeight = (typeof params.itemHeight === "undefined") ? 150 : params.itemHeight;
 	var gui = (typeof params.gui === "undefined") ? undefined : params.gui;
@@ -71,12 +72,14 @@ function Menu( params ) {
 	this.itemHeight = itemHeight;
 	this.items = [];
 	this.boxes = [];
+	this.fakeBoxes = [];
 	this.dynamicWidth = true;
 	this.crystalWidth = 400;
 	this.boxWidth = 250;
 	this.boxHeight = 250;
 	this.boxMargin = 30;
 	this.boxTouchCallback = boxTouchCallback;
+	this.useScroller = useScroller;
 
 	this.minItemX = 0;
 	this.maxItemX = 250;
@@ -137,6 +140,12 @@ Menu.prototype.clear = function() {
 		this.boxes.splice(0,1);
 	}
 
+	while ( this.fakeBoxes.length > 0 ) {
+		var fakeBox = this.fakeBoxes[0];
+		fakeBox.remove();
+		this.fakeBoxes.splice(0,1);
+	}
+
 	if ( this.gui ) {
 		// this.gui.remove( this, 'minItemX' );
 	}
@@ -166,7 +175,7 @@ Menu.prototype.init = function( items, startClosed ) {
 			'menu': this.name,
 			'index': i,
 			'effect-name': items[i].name
-		}).css({
+		}).addClass('menu-touchable').css({
 			'visibility': 'visible',
 			'margin-top': -this.boxHeight/2,
 			'width': this.boxWidth,
@@ -178,11 +187,13 @@ Menu.prototype.init = function( items, startClosed ) {
 			width: this.boxWidth - this.boxMargin * 2,
 			height: this.boxHeight - this.boxMargin * 2,
 			top: this.boxMargin,
-			left: this.boxMargin
+			left: this.boxMargin,
+			'pointer-events': 'none',
 		});
 		// add a gem to the box
 		var gem = new Gem( this.boxWidth, this.boxHeight, this.boxMargin, box );
 		gem.generate();
+		$(gem.canvas).css( 'pointer-events', 'none' );
 		box.gem = gem;
 		box.visible = true;
 		$('#menu').append( box );
@@ -225,21 +236,71 @@ Menu.prototype.init = function( items, startClosed ) {
 			$('#menu').append( clone );
 			this.items.push( item );
 		}
+
+		if ( this.useScroller ) {
+			// var fakeBox = $('<div class="fake-box">' + i%5 +'/'+i + '</div>');
+			var fakeBox = $('<div class="fake-box menu-touchable"></div>');
+			fakeBox.gif = 'images/effect-thumbs/' + items[i].img;
+			fakeBox.gifVisible = true;
+			fakeBox.append( '<img src="' + fakeBox.gif + '">' );
+			fakeBox.img = fakeBox.find('img');
+			// console.log( gem.canvas.toDataURL() );
+			fakeBox.css({
+				background: 'url(' + gem.canvas.toDataURL() + ')'
+			});
+			// fakeBox.append( gem.canvas );
+			
+			box.css({
+				left: 0,
+				'z-index': 100,
+				'margin-top': -100,
+				position: 'inherit'
+			});
+			box.find('img').css({
+				border: '1px solid white',
+				top: -244,
+				position: 'relative',
+			})
+			this.fakeBoxes.push( fakeBox );
+			box.remove();
+			$('#menu-box-scroller').append( fakeBox );
+		}
 	}
+
+	var boxSeparation = ( this.boxExtents * 2 ) / this.boxes.length;
+	$('.fake-box').css({
+		width: this.boxWidth,
+		height: this.boxHeight,
+		// height: boxSeparation,
+		'margin-bottom': boxSeparation-this.boxHeight
+	});
+
+	var scrollPos = boxSeparation * 5;
+	$('#menu-box-scroller').scrollTop( scrollPos - (this.boxHeight + 8) );
+
+
 	// keep menu in scope
 	var menu = this;
 
-	$('.menu-box').on('touchstart', function(e){
-		console.log( 'touched a menu box: ' + $(this).attr('id') + ' ' + $(this).attr('menu') + ' ' + $(this).attr('effect-name') );
+	$('.menu-touchable').on('touchstart', function(e){
+		console.log( 'touchstart on menu box: ' + $(this).attr('id') + ' ' + $(this).attr('effect-name') );
 		e.preventDefault();
 		e.stopPropagation();
 		// menu.close();
-		if ( menu.boxTouchCallback )
-			menu.boxTouchCallback($(this));
+		menu.boxTouchStart( $(this) );
+	}).on('touchend', function(e){
+		console.log( 'touchend on menu box: ' + $(this).attr('id') );
+		menu.boxTouchEnd( $(this), e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY );
+
+		// var element = document.elementFromPoint( e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY );
+		// console.log( element );
+	}).on('touchleave', function(e){
+		console.log( 'touch left box: ' + $(this).attr('id') );
+	}).on('touchenter', function(e){
+		console.log( 'touch entered box: ' + $(this).attr('id') );
 	});
 
 	$('#menu-bg').on( 'touchstart', function(e) {
-		// startTracking( e.originalEvent );
 		menu.startTracking( e.originalEvent );
 	});
 
@@ -247,6 +308,37 @@ Menu.prototype.init = function( items, startClosed ) {
 	if ( startClosed )
 		this.close( true );
 	this.initialized = true;
+}
+
+Menu.prototype.boxTouchStart = function( box ) {
+
+	// if ( this.boxTouchCallback )
+	// 	this.boxTouchCallback(box);
+
+	box.attr('touchStartTime', Date.now() );
+
+	box.css({
+		'-webkit-filter': 'brightness(500%)'
+	});
+}
+
+Menu.prototype.boxTouchEnd = function( box, x, y ) {
+
+	var elapsedTouchTime = Date.now() - box.attr( 'touchStartTime' );
+	if ( elapsedTouchTime < 200 && this.boxTouchCallback ) {
+		// this.boxTouchCallback();
+	}
+
+	// check if the touch ended in the box
+	var element = document.elementFromPoint( x, y );
+
+	if ( element == box[0] ) {
+		this.boxTouchCallback( box );
+	}
+
+	box.css({
+		'-webkit-filter': 'brightness(100%)'
+	});
 }
 
 Menu.prototype.startTracking = function( touchEvent ) {
@@ -310,21 +402,25 @@ Menu.prototype.scroll = function() {
 		var boxY = utils.cmap( rotation, -180, 180, -this.boxExtents, this.boxExtents );
 		box.y = boxY;
 
-		if ( Math.abs(boxY) - this.boxHeight/2 > window.innerHeight/2 && box.visible ) {
-			box.hide();
-			box.visible = false;
-			continue;
-		}
-		else if ( Math.abs(boxY) - this.boxHeight/2 < window.innerHeight/2 && !box.visible ) {
-			box.show();
-			box.visible = true;
-		}
 
 
-		box.css({
-			// 'top': boxY 
-			'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px)'
-		});
+		if ( !this.useScroller ) {
+
+			if ( Math.abs(boxY) - this.boxHeight/2 > window.innerHeight/2 && box.visible ) {
+				box.hide();
+				box.visible = false;
+				continue;
+			}
+			else if ( Math.abs(boxY) - this.boxHeight/2 < window.innerHeight/2 && !box.visible ) {
+				box.show();
+				box.visible = true;
+			}
+
+			box.css({
+				// 'top': boxY 
+				'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px)'
+			});
+		}
 		box.boxY = boxY;
 
 		var boxSeparation = ( this.boxExtents * 2 ) / this.boxes.length;
@@ -339,6 +435,40 @@ Menu.prototype.scroll = function() {
 				'top': window.innerHeight/2 + (boxY>0?1:-1) * ((1-opacity) * boxSeparation/2)
 			});
 		}
+	}
+
+	if ( this.useScroller ) {
+		var modRotationOffset = this.trackRotationOffset;
+		if ( modRotationOffset > 90 ) {
+			modRotationOffset -= 180;
+		}
+
+		if ( modRotationOffset < -90 ) {
+			modRotationOffset += 180;
+		}
+		this.trackRotationOffset = modRotationOffset;
+
+		var boxSeparation = ( this.boxExtents * 2 ) / this.boxes.length;
+		var scrollPos = boxSeparation * 5 - (this.boxHeight + 8) - modRotationOffset * (boxSeparation/(360/this.boxes.length)) ;
+		$('#menu-box-scroller').scrollTop( scrollPos );
+
+		for ( var i=0; i<this.fakeBoxes.length; i++ ) {
+			var fb = this.fakeBoxes[i];
+			var offset = fb.offset();
+			if ( fb.gifVisible ) {
+				if ( offset.top > window.innerHeight || offset.top < -this.boxHeight ) {
+					fb.gifVisible = false;
+					fb.img.attr( 'src', '' );
+				}
+			}
+			else {
+				if ( offset.top < window.innerHeight && offset.top > -this.boxHeight ) {
+					fb.gifVisible = true;
+					fb.img.attr( 'src', fb.gif );
+				}
+			}
+		}
+
 	}
 
 	if ( !this.crystalMenu ) {
@@ -406,6 +536,13 @@ Menu.prototype.open = function() {
 				// '-webkit-transition': '-webkit-transform .3s ease-in-out ' + delay + 'ms'
 			});
 		}
+	}
+
+	if ( this.useScroller ) {
+		$('.fake-box').css({
+			'-webkit-transform': 'scale3d(1,1,1)',
+			'-webkit-transition': '-webkit-transform ' + transitionMillis + 'ms ease-in-out'
+		});
 	}
 
 	if ( !this.crystalMenu ) {
@@ -513,7 +650,6 @@ Menu.prototype.close = function( immediate ) {
 		this.crystalMenu.close( immediate?0:300 );
 	}
 
-
 	for ( var i=0; i<this.boxes.length; i++ ) {
 		var box = this.boxes[i];
 		if ( box.visible ) {
@@ -527,6 +663,14 @@ Menu.prototype.close = function( immediate ) {
 				'-webkit-transition': transition
 			});
 		}
+	}
+
+	if ( this.useScroller ) {
+		console.log( 'lets do this' );
+		$('.fake-box').css({
+			'-webkit-transform': 'scale3d(0,0,0)',
+			'-webkit-transition': '-webkit-transform ' + transitionMillis + 'ms ease-in-out'
+		});
 	}
 
 	if ( !this.crystalMenu ) {

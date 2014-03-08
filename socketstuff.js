@@ -306,11 +306,17 @@ module.exports = function( params ) {
 			console.log( 'remote ' + (remotes.indexOf(this)+1) + ' chose ' + json.name + ' at index ' + json.index );
 			this.effectIndex = json.index;
 		}
+		else if ( json.type == 'setEffectIndex2D' ) {
+			sendOscEffectChange( '/effect2D', json.value );
+		}
+		else if ( json.type == 'setEffectIndex3D' ) {
+			sendOscEffectChange( '/effect3D', json.value );
+		}
 	}
 
 	function countdownTick() {
 		turnTicks++;
-		console.log( 'countdown tick: ' + turnTicks + '/' + turnLength );
+		// console.log( 'countdown tick: ' + turnTicks + '/' + turnLength );
 		if ( turnTicks >= turnLength ) {
 			if ( autoSequence ) {
 				console.log( 'time to switch!' );
@@ -544,7 +550,7 @@ module.exports = function( params ) {
 		if ( index > 8 ) // ignoring fingers 9 and 10
 			return;
 
-		// console.log( 'the phase: ' + phase + ' the index: ' + index + ' the x: ' + x + ' the y: ' + y );
+		console.log( 'the phase: ' + phase + ' the index: ' + index + ' the x: ' + x + ' the y: ' + y );
 
 		var buf = osc.toBuffer({
 			address: address,

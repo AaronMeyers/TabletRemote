@@ -1,5 +1,7 @@
 <% layout('layout') -%>
 
+<script type="text/javascript" src="/javascripts/bootstrap.min.js"></script>
+<link rel="stylesheet" type="text/css" href="/stylesheets/bootstrap.min.css">
 <script src="javascripts/servercontrol.js"></script>
 
 <div id="controlPanel" class="panel panel-default" style="display:none">
@@ -63,6 +65,21 @@
 						<!-- <div class="input-group">
 							<input id="dmxValuelInput" messageType="setDMXValue" type="number" class="form-control" placeholder="DMX Value">
 						</div> -->
+					</div>
+				</div>
+
+				<div class="row" style="margin-right:0px;">
+					<label for="effectIndex3DInput" class="col-xs-2 control-label">3D Effect Index</label>
+					<div class="col-xs-2" style="padding-bottom:5px;">
+						<div class="input-group">
+							<input id="effectIndex3DInput" messageType="setEffectIndex3D" type="number" class="form-control" placeholder="3D Effect Index">
+						</div>
+					</div>
+					<label for="effectIndex2DInput" class="col-xs-2 control-label">2D Effect Index</label>
+					<div class="col-xs-2" style="padding-bottom:5px;">
+						<div class="input-group">
+							<input id="effectIndex2DInput" messageType="setEffectIndex2D" type="number" class="form-control" placeholder="2D Effect Index">
+						</div>
 					</div>
 				</div>
 

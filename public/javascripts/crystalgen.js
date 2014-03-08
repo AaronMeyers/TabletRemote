@@ -7,7 +7,7 @@ function Gem( width, height, margin, div ) {
 	this.facetPts = [];
 
 	if ( typeof div !== 'undefined' )
-		div.append(this.canvas);
+		div.prepend(this.canvas);
 }
 
 Gem.prototype.generate = function() {

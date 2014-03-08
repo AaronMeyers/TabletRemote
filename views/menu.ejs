@@ -19,6 +19,10 @@
 			e.preventDefault();
 		});
 
+		$('.fake-box').on('click', function(e) {
+			console.log( 'fake box clicked' );
+		});
+
 		// menu.init( effectInfo2D.concat( effectInfo2D, effectInfo2D ) );
 		// menu.init( effectInfo3D.concat( effectInfo3D, effectInfo3D ) );
 
@@ -26,7 +30,7 @@
 		// 	width: 300,
 		// 	height: 600
 		// });
-		menu = new Menu({useCrystalMenu:true, boxTouchCallback: boxTouchCallback});
+		menu = new Menu({useCrystalMenu:true, useScroller:true, boxTouchCallback: boxTouchCallback});
 		menu.init( effectInfo2D.concat( effectInfo2D ) );
 		// menu.init( effectInfo2D );
 		// menu.open();
@@ -42,6 +46,14 @@
 		$(document).on( 'keydown', function(e) {
 			var key = String.fromCharCode( e.keyCode );
 			// console.log( key );
+			if ( key == 'S' ) {
+				menu.kill();
+				menu = new Menu({
+					useCrystalMenu: true,
+					useScroller: true
+				});
+				menu.init( effectInfo2D.concat( effectInfo2D ) );
+			}
 			if ( key == '2' ) {
 				console.log( 'initializing 2D menu' );
 				menu.kill();
@@ -71,7 +83,10 @@
 
 <div id="menu-bg">
 	<div id="menu-title"></div>
-	<div id="menu">
+	<div id="menu"></div>
+	<div id="scroll-wrapper">
+		<div id="menu-box-scroller">
+		</div>
 	</div>
 </div>
 

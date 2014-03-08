@@ -32,6 +32,7 @@ CrystalMenu.prototype.init = function() {
 		crystalParent.add( crystal );
 		this.crystalNode.add( crystalParent );
 
+		crystal.rotationSpeed = 0;
 		this.crystals.push( crystal );
 	}
 	this.crystalNode.position.x = -100;
@@ -43,6 +44,8 @@ CrystalMenu.prototype.init = function() {
 }
 
 CrystalMenu.prototype.close = function( duration ) {
+
+	console.log( 'closing with duration: ' + duration );
 	duration = (typeof duration !== 'undefined') ? duration : 300;
 
 	$('#debug').html( 'close in ' + duration );
@@ -53,7 +56,8 @@ CrystalMenu.prototype.close = function( duration ) {
 	}).to({
 		scale: 0.0
 	}, duration).onUpdate(function(){
-		$('#debug').html( 'closing: ' + this.scale + ' of ' + duration + ' with ' + this.node );
+		console.log( 'updating close tween: ' + this.scale );
+		// $('#debug').html( 'closing: ' + this.scale + ' of ' + duration + ' with ' + this.node );
 		this.node.scale.set( this.scale, this.scale, this.scale );
 	}).easing( TWEEN.Easing.Quadratic.InOut )
 	// .delay( 300 )
@@ -102,6 +106,9 @@ CrystalMenu.prototype.setRotation = function( rotation ) {
 			c.scale.set( scale, scale, scale );
 		}
 
+		var rotationSpeed = 
+		c.rotationSpeed = utils.map( Math.abs(visibleRotation), 0, Math.PI * .25, .15, .01 );
+
 
 	});
 }
@@ -117,19 +124,21 @@ CrystalMenu.prototype.kill = function() {
 }
 
 CrystalMenu.prototype.loop = function() {
+	// console.log( 'crystal menu loop: ' + Date.now() );
 	TWEEN.update();
 
 	if ( this.dead )
 		return;
 
 	if ( !this.active ) {
-		requestAnimationFrame(this.loop.bind(this));
+		setTimeout(this.loop.bind(this), 1000/30);
 		return;
 	}
 	this.crystals.forEach(function(c) {
-		c.rotation.x += .01;
+		// c.rotation.x += .01;
+		c.rotation.x += c.rotationSpeed;
 	});
 	this.renderer.render( this.scene, this.camera );
 
-	requestAnimationFrame( this.loop.bind(this) );
+	setTimeout( this.loop.bind(this), 1000/30 );
 }

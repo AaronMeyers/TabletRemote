@@ -37,6 +37,8 @@ $(document).on( 'ready', function() {
 	$('#dmxValueInput').bind('enterKey', sendDMXMessage ).keyup( enterKeyCallback ).val(50);
 	$('#sendDMXButton').bind('click', sendDMXMessage );
 	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered ).keyup( enterKeyCallback );
+	$('#effectIndex3DInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
+	$('#effectIndex2DInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
 
 	$('#heartbeatToggle').change(function() {
 		console.log( 'heartbeat toggled: ' + $(this).is(':checked') );
