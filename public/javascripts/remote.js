@@ -21,6 +21,7 @@ var chosenEffectIndex = 0;
 var imgWidth, imgHeight;
 var welcomeLength;
 var deviceName;
+var useScroller = false;
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -102,7 +103,10 @@ function finalCountdown() {
 	countdown.slideOut();
 	$('#welcome').fadeOut();
 	$('#effectChosen').fadeOut();
-	$('#big-countdown').fadeIn();
+	$('#big-countdown').fadeIn(function(){
+		menu.close();
+		countdown.slideOut();
+	});
 }
 function loop() {
 
@@ -206,14 +210,14 @@ function onSocketMessage( message ) {
 		if ( remoteNum == 1 || remoteNum == 2 ) {
 			// menu.show();
 			menu.kill();
-			menu = new Menu({boxTouchCallback:effectChosen, useCrystalMenu:true, useScroller:false});
+			menu = new Menu({boxTouchCallback:effectChosen, useCrystalMenu:true, useScroller:useScroller});
 			menu.init( effectInfo3D.concat( effectInfo3D ) );
 			menu.close(true);
 			// menu.hide(true);
 		}
 		else if ( remoteNum == 3 || remoteNum == 4 ) {
 			menu.kill();
-			menu = new Menu({boxTouchCallback:effectChosen, useCrystalMenu:true, useScroller:false});
+			menu = new Menu({boxTouchCallback:effectChosen, useCrystalMenu:true, useScroller:useScroller});
 			menu.init( effectInfo2D.concat( effectInfo2D ) );
 			menu.close(true);
 			// menu.hide(true);
@@ -265,6 +269,9 @@ function onSocketMessage( message ) {
 	else if ( json.type == 'closeMenu' ) {
 		menu.close();
 	}
+	else if ( json.type == 'goBlack' ) {
+		goBlack();
+	}
 }
 
 function doWelcome() {
@@ -280,19 +287,21 @@ function killWelcome() {
 
 	$('#welcome')
 	.off( 'touchstart' )
-	.fadeOut();
+	.fadeOut(function(e){
+		countdown.slideIn();
+		menu.open();
+	});
 
-	countdown.slideIn();
-	menu.open();
 }
 
 function killChosen() {
 	$('#effectChosen')
 	.off( 'touchstart' )
-	.fadeOut();
+	.fadeOut(function(){
+		countdown.slideIn();
+		menu.open();
+	});
 
-	countdown.slideIn();
-	menu.open();
 }
 
 function effectChosen( menuBox ) {
@@ -304,7 +313,7 @@ function effectChosen( menuBox ) {
 	countdown.slideOut();
 	$('#chosenEffectName').html( menuBox.attr( 'effect-name' ) );
 	$('#effectChosen').on( 'touchstart', killChosen );
-	$('#effectChosen').fadeIn();
+	$('#effectChosen').delay(500).fadeIn();
 	sendSocketMessage(JSON.stringify({
 		type: 'effectChosen',
 		name: chosenEffectName,
@@ -423,9 +432,24 @@ function killGoAway() {
 	clearTimeout( goAwayTimeout );
 	$('#goaway')
 	.off( 'touchstart' )
-	.fadeOut();
+	.fadeOut(function(){
+		doWelcome();
+	});
 
-	doWelcome();
+}
+
+function goBlack() {
+	clearTimeout( welcomeTimeout );
+	clearTimeout( goAwayTimeout );
+	menu.close();
+	countdown.stop();
+	countdown.slideOut();
+	$('#welcome').hide();
+	$('#effectChosen').hide();
+	$('#big-countdown').hide();
+	$('#canvas').css( 'visibility', 'hidden' );
+	$('#goaway').hide();
+	isActive = false;
 }
 
 function activate( effectType ) {
@@ -480,7 +504,7 @@ function deactivate( json ) {
 	welcomeLength = json.welcomeLength;
 
 	$('#goaway').fadeIn();
-	$('#goaway').on( 'touchstart', killGoAway );
+	// $('#goaway').on( 'touchstart', killGoAway );
 	goAwayTimeout = setTimeout( killGoAway, 1000 * json.exitLength );
 	
 	// bring out the menu

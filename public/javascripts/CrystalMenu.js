@@ -1,6 +1,8 @@
-function CrystalMenu( w, h ) {
+function CrystalMenu( w, h, sep ) {
 	this.width = w;
 	this.height = h;
+	this.gemSeparation = 0;
+	this.gemExtents = 0;
 	this.renderer = new THREE.CanvasRenderer({alpha:true});
 	this.renderer.setSize( this.width, this.height );
 	this.scene = new THREE.Scene();
@@ -10,6 +12,8 @@ function CrystalMenu( w, h ) {
 
 	this.crystalNode;
 	this.crystals = [];
+	this.gemNode;
+	this.gems = [];
 
 	this.time = 0;
 }
@@ -17,13 +21,12 @@ function CrystalMenu( w, h ) {
 CrystalMenu.prototype.init = function() {
 	// var wireframeMaterial = new THREE.MeshBasicMaterial();
 	this.crystalNode = new THREE.Object3D();
+	this.gemNode = new THREE.Object3D();
 	var numCrystals = 10;
 
+	var wireframeMaterial = new THREE.MeshBasicMaterial({wireframe:true, wireframeLinewidth:2});
 	for ( var i=0; i<numCrystals; i++ ) {
 		var crystalParent = new THREE.Object3D();
-		var wireframeMaterial = new THREE.MeshBasicMaterial({wireframe:true, wireframeLinewidth:2});
-		// if ( i==0 )
-		// 	wireframeMaterial.color = new THREE.Color( 1, 0, 0 );
 		var crystal = new THREE.Mesh( new THREE.CrystalGeometry( 80, 240, 100, 7 ), wireframeMaterial );
 		crystal.position.x = 50;
 		crystal.rotation.z = -Math.PI / 2;
@@ -34,9 +37,17 @@ CrystalMenu.prototype.init = function() {
 
 		crystal.rotationSpeed = 0;
 		this.crystals.push( crystal );
+
+		// create gem
+		// var gem = new THREE.Mesh( new THREE.CubeGeometry( 250,250,250 ), wireframeMaterial );
+		// this.gemNode.add( gem );
+		// this.gems.push( gem );
+
 	}
 	this.crystalNode.position.x = -100;
+	this.gemNode.position.x = 575;
 	// this.crystalNode.position.x = this.width/2;
+	this.scene.add( this.gemNode );
 	this.scene.add( this.crystalNode );
 	// this.scene.add ( new THREE.Mesh( new THREE.CubeGeometry(100,100,100), new THREE.MeshBasicMaterial({color:0xFF0000}) ) );
 
@@ -56,7 +67,7 @@ CrystalMenu.prototype.close = function( duration ) {
 	}).to({
 		scale: 0.0
 	}, duration).onUpdate(function(){
-		console.log( 'updating close tween: ' + this.scale );
+		// console.log( 'updating close tween: ' + this.scale );
 		// $('#debug').html( 'closing: ' + this.scale + ' of ' + duration + ' with ' + this.node );
 		this.node.scale.set( this.scale, this.scale, this.scale );
 	}).easing( TWEEN.Easing.Quadratic.InOut )
@@ -79,12 +90,16 @@ CrystalMenu.prototype.open = function( duration ) {
 }
 
 CrystalMenu.prototype.setRotation = function( rotation ) {
+
+
+	// console.log( rotation );
 	rotation = utils.mod( 360, rotation );
 	// rotation = rotation % 360
 	// console.log( rotation % -360 );
 	// rotation = rotation * (Math.PI/180);
 	// this.crystalNode.rotation.z = rotation * (Math.PI/180);
 	var num = this.crystals.length;
+	var crystalMenu = this;
 	this.crystals.forEach( function( c, i ) {
 		// var u = i * ()
 		var offset = i * (1/num) * 360;
@@ -92,13 +107,18 @@ CrystalMenu.prototype.setRotation = function( rotation ) {
 		if ( effectiveRotation > Math.PI*2 )
 			effectiveRotation -= Math.PI*2;
 		c.parent.rotation.z = effectiveRotation;
-		// if ( c.parent.rotation.z > 180 )
 
+		// var rotDegrees = effectiveRotation * (180/Math.PI);
+		// var gemY = -16 + utils.cmap( rotDegrees, -180, 180, -crystalMenu.gemExtents, crystalMenu.gemExtents ) - window.innerHeight/2
+		// crystalMenu.gems[i].position.y = gemY;
+		
+
+
+		// visible rotation is just to put it in a range that makes it easy to do the scaling and movement on local x axis
 		var visibleRotation = effectiveRotation;// - Math.PI*.5;
 		if ( visibleRotation > Math.PI )
 			visibleRotation = -( Math.PI * 2 - visibleRotation );
-		// if ( i==0 )
-		// 	console.log( visibleRotation );
+
 		c.visible = Math.abs(visibleRotation) < Math.PI * .5;
 		if ( c.visible ) {
 			c.position.x = utils.map( Math.abs(visibleRotation) , 0, Math.PI * .5, 300, 50 );
@@ -106,10 +126,7 @@ CrystalMenu.prototype.setRotation = function( rotation ) {
 			c.scale.set( scale, scale, scale );
 		}
 
-		var rotationSpeed = 
 		c.rotationSpeed = utils.map( Math.abs(visibleRotation), 0, Math.PI * .25, .15, .01 );
-
-
 	});
 }
 
@@ -131,7 +148,7 @@ CrystalMenu.prototype.loop = function() {
 		return;
 
 	if ( !this.active ) {
-		setTimeout(this.loop.bind(this), 1000/30);
+		setTimeout(this.loop.bind(this), 1000/60);
 		return;
 	}
 	this.crystals.forEach(function(c) {
@@ -140,5 +157,5 @@ CrystalMenu.prototype.loop = function() {
 	});
 	this.renderer.render( this.scene, this.camera );
 
-	setTimeout( this.loop.bind(this), 1000/30 );
+	setTimeout( this.loop.bind(this), 1000/60 );
 }

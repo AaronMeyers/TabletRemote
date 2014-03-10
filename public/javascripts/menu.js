@@ -7,7 +7,7 @@ var effectInfo2D = [
 	{
 		name: 'Trails',
 		img: 'wave.gif',
-		instruction: 'Your touch illuminates Eisriesentwelt.'
+		instruction: 'Your touch creates illuminating trails.'
 	},
 	{
 		name: 'Wobble',
@@ -17,12 +17,12 @@ var effectInfo2D = [
 	{
 		name: 'Light Ray',
 		img: 'light_ray.gif',
-		instruction: 'Touch Eisriesentwelt to deform the geometry.'
+		instruction: 'Rays of light emanate from your touch.'
 	},
 	{
-		name: 'Point Ray',
+		name: 'Liquify',
 		img: 'point_ray.gif',
-		instruction: 'Your touch reveals the underlying wireframe of Eisriesentwelt.'
+		instruction: 'Your touch melts Eisriesentwelt down into liquid form.'
 	},
 ];
 
@@ -35,22 +35,22 @@ var effectInfo3D = [
 	{
 		name: 'Illumination',
 		img: 'light1.gif',
-		instruction: 'Colored lights respond to your touch'
+		instruction: 'Your touch illuminates Eisriesentwelt.'
 	},
 	{
 		name: 'Ice Ray',
 		img: 'colored_light.gif',
-		instruction: 'Your generates a freezing effect on Eisriesentwelt.'
+		instruction: 'Your touch generates a freezing effect on Eisriesentwelt.'
 	},
 	{
-		name: 'Explosion',
+		name: 'Fragmentation',
 		img: 'fragments2.gif',
-		instruction: 'Fragment Eisriesentwelt with your touch.'
+		instruction: 'Eisriesentwelt breaks into fragments under your finger.'
 	},
 	{
-		name: 'Sound',
+		name: 'Sonic Boom',
 		img: 'sound.gif',
-		instruction: 'Your touch reveals the underlying wireframe of Eisriesentwelt.'
+		instruction: 'Eisriesentwelt becomes sensitive to sound with your touch.'
 	},
 ];
 
@@ -196,6 +196,7 @@ Menu.prototype.init = function( items, startClosed ) {
 		$(gem.canvas).css( 'pointer-events', 'none' );
 		box.gem = gem;
 		box.visible = true;
+		box.scale = 1.0;
 		$('#menu').append( box );
 		this.boxes.push( box );
 
@@ -268,6 +269,10 @@ Menu.prototype.init = function( items, startClosed ) {
 	}
 
 	var boxSeparation = ( this.boxExtents * 2 ) / this.boxes.length;
+	if ( this.crystalMenu ) {
+		this.crystalMenu.gemSeparation = boxSeparation;
+		this.crystalMenu.gemExtents = this.boxExtents;
+	}
 	$('.fake-box').css({
 		width: this.boxWidth,
 		height: this.boxHeight,
@@ -285,19 +290,24 @@ Menu.prototype.init = function( items, startClosed ) {
 	$('.menu-touchable').on('touchstart', function(e){
 		console.log( 'touchstart on menu box: ' + $(this).attr('id') + ' ' + $(this).attr('effect-name') );
 		e.preventDefault();
-		e.stopPropagation();
+		// e.stopPropagation();
 		// menu.close();
 		menu.boxTouchStart( $(this) );
-	}).on('touchend', function(e){
-		console.log( 'touchend on menu box: ' + $(this).attr('id') );
-		menu.boxTouchEnd( $(this), e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY );
 
-		// var element = document.elementFromPoint( e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY );
-		// console.log( element );
-	}).on('touchleave', function(e){
-		console.log( 'touch left box: ' + $(this).attr('id') );
-	}).on('touchenter', function(e){
-		console.log( 'touch entered box: ' + $(this).attr('id') );
+		$(this).on( 'touchmove', function(e) {
+			var x = e.originalEvent.changedTouches[0].clientX, y = e.originalEvent.changedTouches[0].clientY;
+			var element = document.elementFromPoint( x, y );
+			if ( element !== this ) {
+				menu.boxTouchEnd( $(this), e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY );
+				$(this).off('touchend').off('touchmove');
+			}
+		});
+
+		$(this).on('touchend', function(e) {
+			menu.boxTouchEnd( $(this), e.originalEvent.changedTouches[0].clientX, e.originalEvent.changedTouches[0].clientY );
+			$(this).off('touchend').off('touchmove');
+		});
+
 	});
 
 	$('#menu-bg').on( 'touchstart', function(e) {
@@ -316,9 +326,12 @@ Menu.prototype.boxTouchStart = function( box ) {
 	// 	this.boxTouchCallback(box);
 
 	box.attr('touchStartTime', Date.now() );
-
+	var index = parseInt( box.attr('id').split('box')[1] );
+	// this.boxes[index].scale = 1.2;
+	var t = new TWEEN.Tween(this.boxes[index]).to({scale:1.25},200).easing(TWEEN.Easing.Quadratic.InOut).start();
 	box.css({
-		'-webkit-filter': 'brightness(500%)'
+		'-webkit-filter': 'brightness(200%)'
+		// '-webkit-transform': 'scale3d(1.25,1.25,1.25)'
 	});
 }
 
@@ -336,6 +349,12 @@ Menu.prototype.boxTouchEnd = function( box, x, y ) {
 		this.boxTouchCallback( box );
 	}
 
+
+	var index = parseInt( box.attr('id').split('box')[1] );
+	// this.boxes[index].scale = 1.0;
+
+
+	var t = new TWEEN.Tween(this.boxes[index]).to({scale:1.0},200).easing(TWEEN.Easing.Quadratic.InOut).start();
 	box.css({
 		'-webkit-filter': 'brightness(100%)'
 	});
@@ -381,7 +400,8 @@ Menu.prototype.scroll = function() {
 	// console.log( 'scroll' );
 
 	if ( this.retracted || this.transitioning ) {
-		requestAnimationFrame(this.scroll.bind(this));
+		// requestAnimationFrame(this.scroll.bind(this));
+		setTimeout( this.scroll.bind(this), 1000/30 );
 		return;
 	}
 
@@ -394,6 +414,8 @@ Menu.prototype.scroll = function() {
 
 	for ( var i=0; i<this.boxes.length; i++ ) {
 		var box = this.boxes[i];
+		// if ( i==0 )
+			// console.log( 'box scale: ' + box.scale );
 		var rotation = ( ( i / this.boxes.length ) * 360 + this.trackRotationOffset ) % 360;
 		if ( rotation > 180 )
 			rotation -= 360;
@@ -418,7 +440,8 @@ Menu.prototype.scroll = function() {
 
 			box.css({
 				// 'top': boxY 
-				'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px)'
+				// '-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px)'
+				'-webkit-transform': 'translate3d(0px,' + boxY + 'px,0px) scale3d( ' + box.scale + ', ' + box.scale + ', ' + box.scale + ')'
 			});
 		}
 		box.boxY = boxY;
@@ -507,7 +530,8 @@ Menu.prototype.scroll = function() {
 		}
 	}
 
-	requestAnimationFrame(this.scroll.bind(this), 1000/30);
+	// requestAnimationFrame(this.scroll.bind(this), 1000/30);
+	setTimeout( this.scroll.bind(this), 1000/30 );
 }
 
 Menu.prototype.getXPosForRotation = function( rotation ) {
@@ -666,7 +690,6 @@ Menu.prototype.close = function( immediate ) {
 	}
 
 	if ( this.useScroller ) {
-		console.log( 'lets do this' );
 		$('.fake-box').css({
 			'-webkit-transform': 'scale3d(0,0,0)',
 			'-webkit-transition': '-webkit-transform ' + transitionMillis + 'ms ease-in-out'

@@ -312,11 +312,26 @@ module.exports = function( params ) {
 		else if ( json.type == 'setEffectIndex3D' ) {
 			sendOscEffectChange( '/effect3D', json.value );
 		}
+		else if ( json.type == 'goBlack' ) {
+			console.log( 'going black...' );
+			clearTimeout( turnTickIntervalId );
+			remotes.forEach(function(r){
+				if ( !r )
+					return;
+				if ( r.readyState != WebSocket.OPEN )
+					return;
+				r.send(JSON.stringify({
+					type: 'goBlack'
+				}));
+			});
+			lightsOff( 107 );
+			lightsOff( 108 );
+		}
 	}
 
 	function countdownTick() {
 		turnTicks++;
-		// console.log( 'countdown tick: ' + turnTicks + '/' + turnLength );
+		console.log( 'countdown tick: ' + turnTicks + '/' + turnLength );
 		if ( turnTicks >= turnLength ) {
 			if ( autoSequence ) {
 				console.log( 'time to switch!' );
@@ -338,9 +353,9 @@ module.exports = function( params ) {
 		on[dmxChannel] = 255;
 		off[dmxChannel] = 0;
 
-		anim.add( on, 0 ).delay( 500 ).add( off, 0 ).delay( 500 );
-		anim.add( on, 0 ).delay( 500 ).add( off, 0 ).delay( 500 );
-		anim.add( on, 0 ).run( universe, function() {
+		// anim.add( on, 0 ).delay( 500 ).add( off, 0 ).delay( 500 );
+		// anim.add( on, 0 ).delay( 500 ).add( off, 0 ).delay( 500 );
+		anim.add( on, 1000 ).run( universe, function() {
 			console.log( 'lights are on for dmx channel: ' + dmxChannel );
 		});
 	}
@@ -404,6 +419,7 @@ module.exports = function( params ) {
 				type: 'activate',
 				effectType: '3D'
 			}));
+			console.log( 'sending an osc effect change 3d' );
 			sendOscEffectChange( '/effect3D', remotes[remote3DIndex].effectIndex );
 			// lightsOn( remoteDMXChannels[remote3DIndex] );
 		}
@@ -413,7 +429,12 @@ module.exports = function( params ) {
 				type: 'activate',
 				effectType: '2D'
 			}));
-			sendOscEffectChange( '/effect2D', remotes[remote2DIndex].effectIndex );
+			console.log( 'sending an osc effect change 2d' );
+			// delaying to avoid bug on vvvv side
+			setTimeout(function(){
+				sendOscEffectChange( '/effect2D', remotes[remote2DIndex].effectIndex );
+			}, 100 );
+			
 			// lightsOn( remoteDMXChannels[remote2DIndex] );
 		}
 
@@ -535,6 +556,8 @@ module.exports = function( params ) {
 	}
 
 	function sendOscEffectChange( address, index ) {
+
+		console.log( 'sending effect change at address: ' + address + ' and index: ' + index );
 		var buf = osc.toBuffer({
 			address: address,
 			args: [
@@ -542,6 +565,7 @@ module.exports = function( params ) {
 			]
 		});
 		var thePort = (address=='/effect3D'?parseInt(oscPort):parseInt(oscPort)+10) + 9;
+		console.log( 'using port: ' + thePort );
 
 		udp.send( buf, 0, buf.length, thePort, oscAddress );
 	}
@@ -550,7 +574,7 @@ module.exports = function( params ) {
 		if ( index > 8 ) // ignoring fingers 9 and 10
 			return;
 
-		console.log( 'the phase: ' + phase + ' the index: ' + index + ' the x: ' + x + ' the y: ' + y );
+		// console.log( 'the phase: ' + phase + ' the index: ' + index + ' the x: ' + x + ' the y: ' + y );
 
 		var buf = osc.toBuffer({
 			address: address,

@@ -1,6 +1,9 @@
 var socket;
 
 $(document).on( 'ready', function() {
+
+	$('body').css( 'overflow', 'auto' );
+
 	function initWebSocket() {
 		var serverAddress = location.host.split( ":" )[0];
 		socket = new WebSocket("ws://" + serverAddress + ":8080");
@@ -39,6 +42,11 @@ $(document).on( 'ready', function() {
 	$('#oscAddressInput').bind( 'enterKey', oscInfoEntered ).keyup( enterKeyCallback );
 	$('#effectIndex3DInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
 	$('#effectIndex2DInput').bind('enterKey', valueEntered ).keyup( enterKeyCallback );
+	$('.goBlackButton').bind( 'click', function() {
+		sendSocketMessage(JSON.stringify({
+			type: 'goBlack'
+		}));
+	});
 
 	$('#heartbeatToggle').change(function() {
 		console.log( 'heartbeat toggled: ' + $(this).is(':checked') );
