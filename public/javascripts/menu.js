@@ -21,7 +21,7 @@ var effectInfo2D = [
 	},
 	{
 		name: 'Liquify',
-		img: 'point_ray.gif',
+		img: 'liquify.gif',
 		instruction: 'Your touch melts Eisriesentwelt down into liquid form.'
 	},
 ];
